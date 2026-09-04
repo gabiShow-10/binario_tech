@@ -1,0 +1,132 @@
+Exercicio 1:
+Efetue uma requisição GET na rota '/api/v1/ocorrencias' via httpie e valide se a resposta é um array contendo os registros do arquivo 'ocorrencias.json.
+
+http GET http://localhost:3000/api/v1/ocorrencias
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Length: 174
+Content-Type: application/json; charset=utf-8
+Date: Thu, 13 Aug 2026 19:12:37 GMT
+ETag: W/"ae-VWtuNgMOlEY4F24654RpUed9SpM"
+Keep-Alive: timeout=5
+X-Powered-By: Express
+
+[
+    {
+        "data_registro": "2026-08-13T17:57:56.978Z",
+        "descricao": "Troca de pastilhas de freio",
+        "gravidade": "BAIXA",
+        "id": 1786643876978,
+        "montadora": "Mercedes-Benz",
+        "placa": "MBB-1122"
+    }
+]
+
+
+Exercicio 2:
+Utilize o utilitario 'jq' para filtrar do arquivo 'ocorrencias.json' apenas os registros da montadora "Scania".
+
+cat ocorrencias.json | jq '[.[] | select(.montadora == "Scania")]'                                                               
+[
+  {
+    "id": 1786648442612,
+    "montadora": "Scania",
+    "placa": "SCA-9988",
+    "descricao": "Superaquecimento de motor",
+    "gravidade": "ALTA",
+    "data_registro": "2026-08-13T19:14:02.612Z"
+  }
+]
+
+
+Exercicio 3:
+Adicione uma rota GET '/api/v1/ocorrencias/montadora/:nome' que filtra as ocorrências registradas em arquivo de acordo com a montadora informada na URL.
+
+http GET http://localhost:3000/api/v1/ocorrencias/montadora/Scania
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Length: 164
+Content-Type: application/json; charset=utf-8
+Date: Thu, 13 Aug 2026 19:16:02 GMT
+ETag: W/"a4-yeuS+lpPYHvYWuJ6A1Le8Mw2kr8"
+Keep-Alive: timeout=5
+X-Powered-By: Express
+
+[
+    {
+        "data_registro": "2026-08-13T19:14:02.612Z",
+        "descricao": "Superaquecimento de motor",
+        "gravidade": "ALTA",
+        "id": 1786648442612,
+        "montadora": "Scania",
+        "placa": "SCA-9988"
+    }
+]
+
+
+
+
+Exercicio 4:
+Crie uma nova rota DELETE '/api/v1/ocorrencias/:id' que remove do arquivo JSON a ocorrência correspondente ao ID informado.
+
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ cat ocorrencias.json 
+[
+  {
+    "id": 1786643876978,
+    "montadora": "Mercedes-Benz",
+    "placa": "MBB-1122",
+    "descricao": "Troca de pastilhas de freio",
+    "gravidade": "BAIXA",
+    "data_registro": "2026-08-13T17:57:56.978Z"
+  },
+  {
+    "id": 1786648442612,
+    "montadora": "Scania",
+    "placa": "SCA-9988",
+    "descricao": "Superaquecimento de motor",
+    "gravidade": "ALTA",
+    "data_registro": "2026-08-13T19:14:02.612Z"
+  },
+  {
+    "id": 1786648442626,
+    "montadora": "Mercedes-Benz",
+    "placa": "MBB-1122",
+    "descricao": "Troca de pastilhas de freio",
+    "gravidade": "BAIXA",
+    "data_registro": "2026-08-13T19:14:02.626Z"
+  }
+]gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ ^C
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ http DELETE http://localhost:3000/api/v1/ocorrencias/1786643876978
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Length: 47
+Content-Type: application/json; charset=utf-8
+Date: Thu, 13 Aug 2026 19:17:14 GMT
+ETag: W/"2f-gDvSSsWxSSbivU0mvei3gXHBilM"
+Keep-Alive: timeout=5
+X-Powered-By: Express
+
+{
+    "mensagem": "Ocorrencia removida com sucesso."
+}
+
+
+
+Exercicio 5:
+Crie um script em Bash chamado 'limpar_dados.sh' que encerra o processo Node.js e exclui o arquivo 'ocorrencias.json' para resetar o ambiente de testes.
+
+chmod +x limpar_dados.sh 
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ ./limpar_dados.sh 
+==========================================
+   LIMPANDO E RESETANDO AMBIENTE DE TESTES
+==========================================
+[1/2] Encerrando processos do Node.js...
+[2/2] Removendo arquivo 'ocorrencias.json'...
+ -> Arquivo 'ocorrencias.json' removido com sucesso!
+==========================================
+ Ambiente resetado com sucesso!
+ Para reiniciar a API, rode: node ocorrencias_api.js
+==========================================

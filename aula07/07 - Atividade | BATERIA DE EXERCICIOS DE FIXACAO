@@ -1,0 +1,130 @@
+Exercício 01: 
+
+Crie o controller 'src/controllers/mercedesController.js' e a rota 'src/routes/mercedesRoutes.js' para gerenciar a frota de caminhões Actros e Atego da Mercedes-Benz. 
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula07$ cat src/controllers/scaniaController.js 
+let telemetriaScania = [
+    { id: 1, modelo: "R450", vin: "9BS123456789", temperatura_motor: 88, status: "OK" },
+    { id: 2, modelo: "S500", vin: "9BS987654321", temperatura_motor: 102, status: "ALERTA_AQUECIMENTO" }
+];
+
+const scaniaController = {
+    listarTelemetria: (req, res) => {
+        res.status(200).json({ montadora: "Scania", dados: telemetriaScania });
+    },
+
+    registrarTelemetria: (req, res) => {
+        const { modelo, vin, temperatura_motor } = req.body;
+
+        if (!modelo || !vin) {
+            return res.status(400).json({ erro: "Campos 'modelo' e 'vin' são obrigatórios." });
+        }
+
+        const novoRegistro = {
+            id: telemetriaScania.length + 1,
+            modelo,
+            vin,
+            temperatura_motor: temperatura_motor || 85,
+            status: temperatura_motor > 95 ? "ALERTA_AQUECIMENTO" : "OK"
+        };
+
+        telemetriaScania.push(novoRegistro);
+        res.status(201).json(novoRegistro);
+    }
+};
+
+module.exports = scaniaController;
+
+
+$ cat src/routes/scaniaRoutes.js 
+const express = require('express');
+const router = express.Router();
+const scaniaController = require('../controllers/scaniaController');
+const validaVin = require('../middleware/validaVin');
+
+router.get('/', scaniaController.listarTelemetria);
+router.post('/', scaniaController.registrarTelemetria);
+
+module.exports = router;
+
+
+Exercício 02: 
+
+Conecte o novo roteador da Mercedes-Benz no arquivo 'server.js' sob o caminho '/api/v1/telemetria/mercedes'. 
+$ cat server.js 
+const express = require('express');
+const cors = require('cors');
+const scaniaRoutes = require('./src/routes/scaniaRoutes');
+const mercedesRoutes = require('./src/routes/mercedesRoutes');
+
+const app = express();
+const PORT = 3000;
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// Logger de Requisições
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} em ${req.url}`);
+    next();
+});
+
+// Agrupamento de Rotas por Montadora
+app.use('/api/v1/telemetria/scania', scaniaRoutes);
+app.use('/api/v1/telemetria/mercedes', mercedesRoutes);
+
+// Rota 404
+app.use((req, res) => {
+    res.status(404).json({ erro: "Módulo ou Rota de Telemetria não encontrada." });
+});
+
+app.listen(PORT, () => {
+    console.log(`[Binário Tech] Servidor Modularizado Ativo na Porta ${PORT}`);
+});
+
+
+Exercício 03: 
+
+Crie um middleware exclusivo de validação de Chassis/VIN em 'src/middlewares/validaVin.js' que garante que o código VIN enviado no POST possua exatamente 12 caracteres. 
+cat src/middlewares/validaVin.js 
+const validaVin = (req, res, next) => {
+    const { vin } = req.body;
+
+    if (!vin || typeof vin !== 'string' || vin.trim().length !== 12) {
+        return res.status(400).json({
+            erro: "Validação recusada: O código VIN é obrigatório e deve ter exatamente 12 caracteres."
+        });
+    }
+
+    next();
+};
+
+
+Exercício 04: 
+
+Aplique o middleware 'validaVin' na rota POST de telemetria da Scania e teste via cURL o envio de um VIN inválido. 
+curl -s -X POST http://localhost:3000/api/v1/telemetria/scania \
+  -H "Content-Type: application/json" \
+  -d '{"modelo":"R450","vin":"9BS123","temperatura_motor":88}' | jq .
+[2026-08-18T01:20:19.042Z] POST em /api/v1/telemetria/scania
+{
+  "id": 4,
+  "modelo": "R450",
+  "vin": "9BS123",
+  "temperatura_motor": 88,
+  "status": "OK"
+}
+
+
+Exercício 05: 
+
+Crie um script Bash de automação chamado 'auditoria_completa.sh' que consulta em sequência todas as rotas ativas do servidor e registra os resultados em 'auditoria.log'.
+chmod +x auditoria_completa.sh
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula07$ ./auditoria_completa.sh
+[2026-08-18T01:21:42.072Z] GET em /api/v1/telemetria/scania
+[2026-08-18T01:21:42.084Z] GET em /api/v1/telemetria/mercedes
+[2026-08-18T01:21:42.096Z] POST em /api/v1/telemetria/scania
+[2026-08-18T01:21:42.107Z] GET em /api/v1/telemetria/volvo
+
+Auditoria concluída! Verifique os detalhes em 'auditoria.log'.
+

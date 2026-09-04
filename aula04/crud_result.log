@@ -1,0 +1,38 @@
+=== INICIANDO TESTES CRUD - Thu Aug  6 07:50:44 PM UTC 2026 ===
+
+1. Cadastrando Veículo 1 (DAF)...
+{
+  "id": 3,
+  "placa": "ABC-9999",
+  "montadora": "DAF",
+  "modelo": "XF",
+  "status": "DISPONIVEL"
+}
+
+2. Cadastrando Veículo 2 (Iveco)...
+{
+  "id": 4,
+  "placa": "XYZ-8888",
+  "montadora": "Iveco",
+  "modelo": "Hi-Way",
+  "status": "DISPONIVEL"
+}
+
+3. Atualizando status do Veículo ID 3...
+{
+  "mensagem": "Status atualizado com sucesso!",
+  "veiculo": {
+    "id": 3,
+    "placa": "ABC-9999",
+    "montadora": "DAF",
+    "modelo": "XF",
+    "status": "EM_ROTA"
+  }
+}
+
+4. Deletando Veículo ID 4...
+{
+  "mensagem": "Veiculo ID 4 removido com sucesso."
+}
+
+=== TESTES FINALIZADOS DE FORMA SEQUENCIAL ===

@@ -1,0 +1,70 @@
+EXERCÍCIO 1:
+
+Adicione um método 'buscarPorSeveridade' no `alertaController.js` que filtre documentos na coleção utilizando a query do Mongoose `Alerta.find({ nivelSeveridade })` por meio de parâmetros de rota (`/api/v1/alertas/severidade/:nivel`).
+buscarPorSeveridade: async (req, res) => {
+    try {
+      const { nivel } = req.params;
+      const alertas = await Alerta.find({ nivelSeveridade: nivel.toUpperCase() }).sort({ registradoEm: -1 });
+      res.status(200).json(alertas);
+    } catch (erro) {
+      res.status(500).json({ erro: "Erro ao buscar alertas por severidade", detalhe: erro.message });
+    }
+  }
+};
+
+router.get('/severidade/:nivel', alertaController.buscarPorSeveridade);
+
+EXERCÍCIO 2:
+
+Modifique o Schema `alertaSchema` para aceitar um campo do tipo Array de Strings chamado `tags` (ex: `['superaquecimento', 'manutencao_urgente']`).
+tags: [String],
+metadados: (...)
+
+EXERCÍCIO 3:
+
+Tente inserir um alerta enviando o campo `nivelSeveridade` com o valor `'INVALIDO'`. Verifique a mensagem de erro de validação do Enum retornado pelo Mongoose.
+$ curl -s -X POST http://localhost:3000/api/v1/alertas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "equipamentoId": "TESTE-ENUM-01",
+    "nivelSeveridade": "INVALIDO",
+    "temperaturaMedida": 75.0
+  }' | jq .
+{
+  "erro": "Erro ao salvar alerta no MongoDB",
+  "detalhe": "Alerta validation failed: temperaturaMedia: Path `temperaturaMedia` is required., nivelSeveridade: `INVALIDO` is not a valid enum value for path `nivelSeveridade`."
+}
+
+EXERCÍCIO 4:
+
+Escreva um comando em cURL para inserir um novo alerta com severidade `'BAIXO'` e insira metadados customizados como tipo de carga e velocidade.
+curl -s -X POST http://localhost:3000/api/v1/alertas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "equipamentoId": "VOLVO-FH540-02",
+    "nivelSeveridade": "BAIXO",
+    "temperaturaMedida": 68.2,
+    "tags": ["superaquecimento", "manutencao_urgente"],
+    "metadados": {
+      "tipoCarga": "Perecíveis",
+      "velocidade": "80 km/h"
+    }
+  }' | jq .
+{
+  "equipamentoId": "VOLVO-FH540-02",
+  "nivelSeveridade": "BAIXO",
+  "temperaturaMedida": 68.2,
+  "tags": [
+    "superaquecimento",
+    "manutencao_urgente"
+  ],
+  "metadados": {
+    "tipoCarga": "Perecíveis",
+    "velocidade": "80 km/h"
+  },
+  "_id": "6a97744027d663da15fd8e33",
+  "registradoEm": "2026-09-02T00:56:32.722Z",
+  "createdAt": "2026-09-02T00:56:32.727Z",
+  "updatedAt": "2026-09-02T00:56:32.727Z",
+  "__v": 0
+}

@@ -1,0 +1,64 @@
+EXERCÍCIO 1: 
+
+Adicione um método 'buscarPorId' no controller 'veiculosController.js' que consulte a tabela 'veiculos' filtrando pelo campo 'id' usando Knex (`db('veiculos').where({ id }).first()`). Caso o veículo não seja localizado, retorne HTTP Status 404. 
+curl -s http://localhost:3000/api/v1/veiculos/1 | jq .
+{
+  "erro": "Rota não encontrada no servidor Binário Tech."
+}
+
+EXERCÍCIO 2: 
+
+Adicione a rota HTTP PATCH no arquivo 'src/routes/veiculosRoutes.js' mapeando o caminho '/:id/status' para atualizar o status de um veículo diretamente na tabela SQLite via Knex. 
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula08$ curl -s -X PATCH http://localhost:3000/api/v1/veiculos/1/status \
+  -H "Content-Type: application/json" \
+  -d '{"status":"em_manutencao"}' | jq .
+{
+  "mensagem": "Status atualizado com sucesso"
+}
+
+
+curl -s -X PATCH http://localhost:3000/api/v1/veiculos/44/status   -H "Content-Type: application/json"   -d '{"status":"em_manutencao"}' | jq .
+{
+  "mensagem": "Veículo não encontrado"
+}
+
+
+EXERCÍCIO 3: 
+
+Crie uma nova Migration para criar a tabela 'motoristas' contendo os campos: id (primary key), nome (not nullable), cnh (unique, not nullable) e categoria (not nullable). Execute a migração via CLI. 
+$ npx knex migrate:latest
+npm notice run aula08@1.0.0 npx
+npm notice run 'knex' migrate:latest
+Using environment: development
+Batch 2 run: 1 migrations
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula08$ cat src/database/migrations/20260820190504_create_motoristas.js 
+exports.up = function(knex) {
+  return knex.schema.createTable('motoristas', function(table) {
+    table.increments('id').primary();
+    table.string('nome').notNullable();
+    table.string('cnh').notNullable().unique();
+    table.string('categoria').notNullable();
+  });
+};
+
+exports.down = function(knex) {
+  return knex.schema.dropTable('motoristas');
+};
+
+
+EXERCÍCIO 4: 
+
+Escreva os comandos da CLI do Knex para reverter a última migration executada (`rollback`) e em seguida reaplicá-la (`migrate:latest`).
+$ npx knex migrate:rollback
+npm notice run aula08@1.0.0 npx
+npm notice run 'knex' migrate:rollback
+Using environment: development
+Batch 2 rolled back: 1 migrations
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula08$ npx knex migrate:latest
+npm notice run aula08@1.0.0 npx
+npm notice run 'knex' migrate:latest
+Using environment: development
+Batch 2 run: 1 migrations
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula08$ ls src/database/migrations/
+20260820190504_create_motoristas.js  20260820_create_veiculos.js
+

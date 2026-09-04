@@ -1,0 +1,84 @@
+[GRUPO B: GERENCIAMENTO DE DEPENDENCIAS E PACOTES]
+
+Exercicio 06:
+
+Inspecione o arquivo `package.json` do seu projeto usando o comando `cat` e
+valide se a dependencia `express` esta registrada corretamente.
+R.cat package.json
+{
+  "name": "aula2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
+
+Exercicio 07:
+
+Instale o pacote `nodemon` como dependencia de desenvolvimento (`npm install -D nodemon`)
+e confirme as alteracoes ocorridas no `package.json`.
+R.npm install -D nodemon
+
+added 26 packages, and audited 94 packages in 3s
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula2$ cat package.json
+{
+  "name": "aula2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
+
+Exercicio 08:
+
+Utilize a ferramenta `jq` para extrair apenas o campo "dependencies" do arquivo `package.json`:
+$ cat package.json | jq .dependencies
+R.cat package.json | jq .dependencies
+{
+  "express": "^5.2.1"
+}
+
+Exercicio 09:
+
+Crie um script customizado dentro de `package.json` chamado `"check"` que executa
+o comando `node -v` e teste sua execucao via `npm run check`.
+R. npm run check
+npm notice run aula2@1.0.0 check
+npm notice run node -v
+v24.18.0
+
+Exercicio 10:
+
+Instale um pacote global ou utilitario via `npm` ou `apt` e verifique onde seu
+binario foi salvo no sistema usando o comando `which` (ex: `which http`).
+R. npm install -g http-server
+npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 48 packages in 3s
+
+15 packages are looking for funding
+  run `npm fund` for details
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula2$ which http-server
+/usr/local/nvm/versions/node/v24.18.0/bin/http-server

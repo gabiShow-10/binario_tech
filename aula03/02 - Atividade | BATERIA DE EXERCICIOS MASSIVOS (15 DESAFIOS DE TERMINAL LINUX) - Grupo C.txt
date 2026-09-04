@@ -1,0 +1,86 @@
+UPO C: TESTES DE REQUISICAO E MANIPULACAO DE JSON] 
+Exercicio 11: 
+
+Efetue uma requisicao HTTP GET para a rota `http://localhost:3000/scania/info`
+utilizando o comando `curl` e salve a resposta em um arquivo chamado `scania.json`. 
+R. curl -s http://localhost:3000/scania/info > scania.json
+ls
+scania.json
+ 
+Exercicio 12: 
+
+Efetue a mesma requisicao utilizando o `httpie` (`http GET http://localhost:3000/scania/info`)
+e observe a formatacao colorida no terminal. 
+R. node servidor.js &
+[1] 6296
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula2$ Servidor rodando com sucesso na porta 3000
+http GET http://localhost:3000/scania/info
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 115
+Content-Type: application/json; charset=utf-8
+Date: Sat, 01 Aug 2026 00:15:35 GMT
+ETag: W/"73-eGSIty/jS91mrkyHn4CJndI9FT8"
+Keep-Alive: timeout=5
+X-Powered-By: Express
+
+{
+    "foco": "Caminhoes Pesados e Ônibus",
+    "montadora": "Scania",
+    "sistema_telemetria": "Ativo",
+    "unidades_conectadas": 1420
+}
+
+ Exercicio 13: 
+
+Utilize o utilitario `jq` para ler o arquivo `scania.json` e extrair individualmente
+apenas o valor da chave `sistema_telemetria`. 
+R. jq '.sistema_telemetria' scania.json
+"Ativo"
+
+ Exercicio 14: 
+
+Adicione uma nova rota `/vw/info` no arquivo `servidor.js` que retorne dados da
+montadora Volkswagen, reinicie o processo do Node e teste a nova rota no terminal. 
+R. curl -s http://localhost:3000/vw/info | jq .
+{
+  "montadora": "Volkswagen",
+  "sistema_telemetria": "Ativo"
+}
+
+ Exercicio 15: 
+
+Crie um script em Bash chamado `testar_servidor.sh` que executa automaticamente
+requisicoes para as tres rotas (`/status`, `/scania/info`, `/vw/info`), exibindo
+o horario de cada teste. Dê permissao de execucao (`chmod +x testar_servidor.sh`)
+R. mod +x testar_servidor.sh
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula2$ ./testar_servidor.sh
+=== [Sat Aug  1 12:26:43 AM UTC 2026] Testando /status ===
+{
+  "servidor": "Binario Tech Core",
+  "status": "OPERACIONAL",
+  "montadoras_atendidas": [
+    "Scania",
+    "Mercedes",
+    "VW"
+  ],
+  "uptime_segundos": 164.018671258
+}
+
+
+=== [Sat Aug  1 12:26:43 AM UTC 2026] Testando /scania/info ===
+{
+  "montadora": "Scania",
+  "foco": "Caminhoes Pesados e Ônibus",
+  "sistema_telemetria": "Ativo",
+  "unidades_conectadas": 1420
+}
+
+
+=== [Sat Aug  1 12:26:43 AM UTC 2026] Testando /vw/info ===
+{
+  "montadora": "Volkswagen",
+  "sistema_telemetria": "Ativo"
+}
+
+

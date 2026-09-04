@@ -1,0 +1,96 @@
+BATERIA DE EXERCICIOS DE FIXACAO.
+EXERCÍCIO 1: 
+
+Crie um novo arquivo de Seed `src/database/seeds/02_povoar_mais_veiculos.js` que adicione mais 2 veículos (Mercedes-Benz e DAF) sem apagar os dados existentes na tabela. 
+exports.seed = async function(knex) {
+  await knex('veiculos').insert([
+    {
+      montadora: 'Mercedes-Benz',
+      modelo: 'Accelo 1016',
+      placa: 'MBB2E45'
+    },
+    {
+      montadora: 'DAF',
+      modelo: 'XF 530',
+      placa: 'DAF9F88'
+    }
+  ]);
+};
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula10$ npx knex seed:run
+npm notice run aula10@1.0.0 npx
+npm notice run 'knex' seed:run
+Using environment: development
+Ran 2 seed files
+
+
+EXERCÍCIO 2: 
+
+Adicione ao middleware `tratarErros.js` uma verificação específica para erros de sintaxe no JSON enviado no corpo da requisição (`err instanceof SyntaxError`), retornando HTTP Status Code 400 com mensagem amigável. 
+cat src/middlewares/tratarErros.js 
+function tratarErros(err, req, res, next) {
+  console.error(`[ERRO LOG]: ${err.message}`);
+
+  // Exercício 2: Trata erro de sintaxe do JSON (ex: vírgula a mais, aspas não fechadas)
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ 
+      erro: "O corpo da requisição contém um formato JSON inválido." 
+    });
+  }
+
+  // Tratamento de conflito de chave única (ex: placa duplicada)
+  if (err.message && err.message.includes('UNIQUE constraint failed')) {
+    return res.status(409).json({ erro: "Conflito de dados: Registro já existe com este valor único (ex: Placa)." });
+  }
+
+  // Tratamento de chave estrangeira (ex: veículo inexistente)
+  if (err.message && err.message.includes('FOREIGN KEY constraint failed')) {
+    return res.status(400).json({ erro: "Erro de relacionamento: O registro pai fornecido nao existe." });
+  }
+
+  // Erro padrão do servidor
+  return res.status(500).json({ erro: "Erro interno no servidor da Binário Tech." });
+}
+
+module.exports = tratarErros;
+
+
+curl -X POST http://localhost:3000/veiculos \
+  -H "Content-Type: application/json" \
+  -d '{ "montadora": "Volvo", "modelo": "FH", '
+
+[ERRO LOG]: Expected double-quoted property name in JSON at position 40 (line 1 column 41)
+{"erro":"O corpo da requisição contém um formato JSON inválido."}
+
+
+EXERCÍCIO 3: 
+
+Crie um script customizado no `package.json` chamado `"db:reset"` que execute em sequência os comandos `knex migrate:rollback --all`, `knex migrate:latest` e `knex seed:run`. 
+$ npm run db:reset
+
+npm notice run aula10@1.0.0 db:reset
+npm notice run npx knex migrate:rollback --all && npx knex migrate:latest && npx knex seed:run
+npm notice run aula10@1.0.0 npx
+npm notice run 'knex' migrate:rollback --all
+Using environment: development
+Batch 1 rolled back: 1 migrations
+npm notice run aula10@1.0.0 npx
+npm notice run 'knex' migrate:latest
+Using environment: development
+Batch 1 run: 1 migrations
+npm notice run aula10@1.0.0 npx
+npm notice run 'knex' seed:run
+Using environment: development
+Ran 2 seed files
+
+EXERCÍCIO 4: 
+
+Escreva um comando em cURL para testar a tentativa de inserção de um veículo sem enviar o campo 'placa' e confirme se o validador do controller retorna HTTP Status Code 400.
+ -X POST http://localhost:3000/api/v1/frota/veiculo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "montadora": "Scania",
+    "modelo": "R450"
+  }'
+
+{"erro":"Campos 'placa', 'montadora' e 'modelo' são obrigatorios."}
+
