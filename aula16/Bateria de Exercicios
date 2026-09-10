@@ -1,2 +1,5 @@
 Exercicio 1:
 Teste de alteração
+
+Exercicio 2: 
+Criar o .gitignore e adicionar 'node_modules' e arquivos '.env'
