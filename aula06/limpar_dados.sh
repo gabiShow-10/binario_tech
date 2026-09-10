@@ -9,7 +9,7 @@ echo "=========================================="
 
 # 1. Encerra o processo do Node.js
 echo "[1/2] Encerrando processos do Node.js..."
-pkill -f "node ocorrencias_api.js" 2>/dev/null || fuser -k 3000/tcp 2>/dev/null || true
+pkill -f "node ocorrencias_api.js" 2>/dev/null || fuser -k 3013/tcp 2>/dev/null || true
 
 # Breve pausa para garantir a liberação da porta
 sleep 1

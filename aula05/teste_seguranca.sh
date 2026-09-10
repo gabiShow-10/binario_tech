@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOG_FILE="audit_seguranca.log"
-URL="http://localhost:3000/api/v1/motoristas"
+URL="http://localhost:3013/api/v1/motoristas"
 CHAVE_VALIDA="binario-tech-secret-2026"
 
 echo "=== AUDIT DE SEGURANCA ===" > "$LOG_FILE"

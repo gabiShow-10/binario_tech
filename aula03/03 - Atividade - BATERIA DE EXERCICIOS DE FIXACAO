@@ -1,0 +1,62 @@
+Exercicio 01:
+
+Efetue uma requisicao GET para a rota '/api/v1/scania' via cURL e use o 'jq' para exibir somente a chave 'modelo'.
+ http://localhost:3001/api/v1/scania | jq .modelo
+"R450"
+
+
+Exercicio 02:
+
+Faça uma requisicao para a rota '/api/v1/mercedes' utilizando a ferramenta 'httpie' e salve o resultado no arquivo 'mercedes.json'.
+http GET http://localhost:3001/api/v1/mercedes > mercedes.json
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula03$ ls
+mercedes.json
+
+
+Exercicio 03:
+
+Utilize o 'jq' para ler o arquivo 'mercedes.json' e filtrar apenas o valor do campo 'status'.
+jq '.status' mercedes.json
+"OK"
+
+
+Exercicio 04:
+
+Edite o arquivo 'telemetria.js' e adicione uma nova rota '/api/v1/volvo' retornando os dados do modelo 'FH 540'. Reinicie a aplicacao e teste a rota.
+curl -s http://localhost:3001/api/v1/volvo | jq .modelo
+"FH 540"
+
+
+Exercicio 05:
+
+Configure o arquivo 'package.json' adicionando um script "start": "node telemetria.js". Teste a execucao usando 'npm start'.
+npm start
+npm notice run aula03@1.0.0 start
+npm notice run node telemetria.js
+[Binario Tech] Servidor de Telemetria rodando em http://localhost:3001
+
+
+Exercicio 06:
+
+Crie um comando que direcione o resultado da auditoria do script 'testar_telemetria.sh' para um arquivo de log chamado 'relatorio.log'.
+chmod +x testar_telemetria.sh
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula03$ ./testar_telemetria.sh > relatorio.log
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula03$ ls
+relatorio.log
+
+
+Exercicio 07:
+
+Filtre a resposta da rota '/api/v1/vw' para exibir apenas os campos 'montadora' e 'status' em uma unica chamada 'jq'.
+ http://localhost:3001/api/v1/vw | jq '{montadora: .montadora, status: .status}'
+{
+  "montadora": "Volkswagen",
+  "status": "ALERTA"
+}
+
+Exercicio 08:
+
+Localize o PID do processo Node.js em execucao no seu terminal usando 'ps aux | grep node' e encerre-o com o comando 'kill -9 <PID>' 
+ps aux |grep node
+kill -9 4819
+

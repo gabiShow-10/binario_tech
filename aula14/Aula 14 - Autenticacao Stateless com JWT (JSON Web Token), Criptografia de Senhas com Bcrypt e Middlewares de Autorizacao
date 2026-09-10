@@ -1,0 +1,107 @@
+EXERCÍCIO 1: 
+
+Crie um middleware de autorização por perfil chamado `autorizarPerfil(perfisPermitidos)` que receba um array de perfis (ex: `['ADMIN']`) e permita o acesso apenas se o perfil presente no token JWT do usuário estiver no array. 
+$ cat src/middlewares/autorizarPerfil.js 
+const autorizarPerfil = (perfisPermitidos = []) => {
+  return (req, res, next) => {
+    // req.usuario é injetado previamente pelo middleware autenticarToken
+    if (!req.usuario || !req.usuario.perfil) {
+      return res.status(403).json({ 
+        status: "ERRO", 
+        mensagem: "Acesso negado. Informações de perfil ausentes." 
+      });
+    }
+
+    const possuiPermissao = perfisPermitidos.includes(req.usuario.perfil);
+
+    if (!possuiPermissao) {
+      return res.status(403).json({ 
+        status: "ERRO", 
+        mensagem: `Acesso negado. Perfil '${req.usuario.perfil}' não tem permissão para acessar este recurso.` 
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = autorizarPerfil;
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula14$ cat src/routes/authRoutes.js 
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/authController');
+const autenticarToken = require('../middlewares/autenticarToken');
+const autorizarPerfil = require('../middlewares/autorizarPerfil');
+
+// Rotas públicas
+router.post('/register', authController.registrar);
+router.post('/login', authController.login);
+
+// Rota protegida por autenticação e restrita apenas para perfil ADMIN
+router.get('/admin/dashboard', autenticarToken, autorizarPerfil(['ADMIN']), (req, res) => {
+  res.status(200).json({
+    mensagem: "Bem-vindo ao painel administrativo!",
+    dadosUsuario: req.usuario
+  });
+});
+
+module.exports = router;
+
+
+EXERCÍCIO 2: 
+
+Modifique o tempo de expiração do JWT no `authController.js` para `15s` (15 segundos). Faça o login, aguarde o tempo passar e tente acessar a rota protegida para observar a mensagem de erro de token expirado. 
+curl -s -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "operador@binariotech.com.br", "senha": "SenhaSegura123!", "perfil": "ADMIN" }' | jq .
+{
+  "mensagem": "Usuário registrado com sucesso!",
+  "usuarioId": 1
+}
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula14$ LOGIN_RESP=$(curl -s -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{ "email": "operador@binariotech.com.br", "senha": "SenhaSegura123!" }') && TOKEN=$(echo $LOGIN_RESP | jq -r '.token') && curl -s http://localhost:3000/api/v1/auth/perfil -H "Authorization: Bearer $TOKEN" | jq .
+{
+  "mensagem": "Acesso autorizado à rota protegida!",
+  "dadosUsuarioLogado": {
+    "id": 1,
+    "email": "operador@binariotech.com.br",
+    "perfil": "ADMIN",
+    "iat": 1788801892,
+    "exp": 1788801907
+  }
+}
+
+sleep 16s:
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula14$ curl -s http://localhost:3000/api/v1/auth/perfil -H "Authorization: Bearer $TOKEN" | jq .
+{
+  "status": "ERRO",
+  "mensagem": "Token inválido ou expirado."
+}
+
+EXERCÍCIO 3: 
+
+Adicione uma validação na rota de registro enviando uma senha com menos de 6 caracteres e garanta que o sistema rejeite a solicitação com HTTP Status 400. 
+curl -s -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "dev@binariotech.com.br", "senha": "123" }' | jq .
+{
+  "status": "ERRO",
+  "mensagem": "A senha deve conter no mínimo 6 caracteres."
+}
+
+
+EXERCÍCIO 4: 
+
+Escreva um comando em cURL com um token alterado/corrompido manualmente e confirme se o middleware responde com HTTP Status 403 Forbidden.
+$ curl -s -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "operador@binariotech.com.br", "senha": "SenhaSegura123!", "perfil": "ADMIN" }' | jq .
+{
+  "mensagem": "Usuário registrado com sucesso!",
+  "usuarioId": 1
+}
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula14$ curl -s http://localhost:3000/api/v1/auth/perfil \
+  -H "Authorization: Bearer token_falso_123" | jq .
+{
+  "status": "ERRO",
+  "mensagem": "Token inválido ou expirado."
+}

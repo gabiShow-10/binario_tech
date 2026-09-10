@@ -1,0 +1,136 @@
+EXERCÍCIO 1: 
+
+Implemente um novo método no 'telemetriaController.js' chamado 'buscarPorVeiculo' que receba o 'veiculo_id' como parâmetro de rota (`/api/v1/telemetria/veiculo/:id`) e retorne apenas as leituras de telemetria associadas àquele veículo específico. 
+
+EXERCÍCIO 2: 
+
+Tente cadastrar uma leitura de telemetria enviando um 'veiculo_id' que não existe no banco de dados (ex: ID 999). Verifique se o controller responde com HTTP Status Code 404 e a mensagem de erro apropriada. 
+
+EXERCÍCIO 3: 
+
+Adicione um campo de filtro por Query Parameter no método 'listarRelatorioCompleto' para que seja possível filtrar as leituras que apresentem 'temperatura_motor' acima de 95 graus (`/api/v1/telemetria/relatorio?alerta=true`). 
+
+EXERCICIOS 1, 2 E 3 RESOLVIDOS:
+// telemetriaController.js
+const knex = require('../database');
+
+module.exports = {
+  // EXERCÍCIO 1: Retorna leituras de um veículo específico pelo ID da rota
+  async buscarPorVeiculo(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Verifica se o veículo existe no banco de dados
+      const veiculo = await knex('veiculos').where({ id }).first();
+      if (!veiculo) {
+        return res.status(404).json({ erro: 'Veículo não encontrado.' });
+      }
+
+      const leituras = await knex('telemetria').where({ veiculo_id: id });
+      return res.json(leituras);
+    } catch (error) {
+      return res.status(500).json({ erro: 'Erro interno no servidor.' });
+    }
+  },
+
+  // EXERCÍCIO 2: Valida se o veículo existe antes de salvar a telemetria
+  async salvar(req, res) {
+    try {
+      const { veiculo_id, temperatura_motor, velocidade, latitude, longitude } = req.body;
+
+      const veiculo = await knex('veiculos').where({ id: veiculo_id }).first();
+      if (!veiculo) {
+        return res.status(404).json({ erro: 'Veículo não encontrado para o ID informado.' });
+      }
+
+      const [id] = await knex('telemetria').insert({
+        veiculo_id,
+        temperatura_motor,
+        velocidade,
+        latitude,
+        longitude,
+        data_hora: new Date()
+      });
+
+      return res.status(201).json({ id, veiculo_id, temperatura_motor, velocidade, latitude, longitude });
+    } catch (error) {
+      return res.status(500).json({ erro: 'Erro interno ao salvar leitura de telemetria.' });
+    }
+  },
+
+  // EXERCÍCIO 3: Filtro por Query Parameter ?alerta=true
+  async listarRelatorioCompleto(req, res) {
+    try {
+      const { alerta } = req.query;
+
+      let query = knex('telemetria')
+        .join('veiculos', 'telemetria.veiculo_id', '=', 'veiculos.id')
+        .select(
+          'telemetria.*',
+          'veiculos.placa',
+          'veiculos.modelo',
+          'veiculos.montadora'
+        );
+
+      if (alerta === 'true') {
+        query = query.where('telemetria.temperatura_motor', '>', 95);
+      }
+
+      const relatorio = await query;
+      return res.json(relatorio);
+    } catch (error) {
+      return res.status(500).json({ erro: 'Erro interno ao gerar relatório.' });
+    }
+  }
+};
+
+
+EXERCÍCIO 4: 
+
+Escreva um comando em cURL para inserir um veículo da montadora 'Volkswagen', modelo 'Delivery' e, em seguida, insira duas leituras de telemetria distintas para esse novo veículo.
+{"id":5,"placa":"VWX-1234","montadora":"Volkswagen","modelo":"Delivery"}
+
+[
+  {
+    "veiculo_id": 1,
+    "placa": "VOL-1010",
+    "modelo": "FH 540",
+    "velocidade": 80,
+    "temperatura_motor": 88.5
+  },
+  {
+    "veiculo_id": 1,
+    "placa": "VOL-1010",
+    "modelo": "FH 540",
+    "velocidade": 85.2,
+    "temperatura_motor": 90.1
+  },
+  {
+    "veiculo_id": 2,
+    "placa": "SCA-2020",
+    "modelo": "R500",
+    "velocidade": 92,
+    "temperatura_motor": 94.8
+  },
+  {
+    "veiculo_id": 3,
+    "placa": "MBB2E45",
+    "modelo": "Accelo 1016",
+    "velocidade": null,
+    "temperatura_motor": null
+  },
+  {
+    "veiculo_id": 4,
+    "placa": "DAF9F88",
+    "modelo": "XF 530",
+    "velocidade": null,
+    "temperatura_motor": null
+  },
+  {
+    "veiculo_id": 5,
+    "placa": "VWX-1234",
+    "modelo": "Delivery",
+    "velocidade": null,
+    "temperatura_motor": null
+  }
+]

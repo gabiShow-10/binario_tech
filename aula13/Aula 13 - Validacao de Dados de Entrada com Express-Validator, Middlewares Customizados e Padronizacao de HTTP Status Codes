@@ -1,0 +1,93 @@
+EXERCÍCIO 1: 
+
+Adicione uma regra de validação na lista `regrasCadastroVeiculo` garantindo que o campo `placa` seja gravado/convertido automaticamente em letras maiúsculas utilizando o sanitizador `.toUpperCase()`. 
+
+EXERCÍCIO 2: 
+
+Adicione um campo opcional `anoFabricacao` na validação de veículos, garantindo que, se for fornecido, seja um número inteiro entre 2000 e o ano atual. 
+
+Respostas 1 e 2:
+const { body } = require('express-validator');
+
+const anoAtual = new Date().getFullYear();
+
+const regrasCadastroVeiculo = [
+  body('placa')
+    .notEmpty().withMessage('A placa do veículo é obrigatória.')
+    .isString().withMessage('A placa deve ser um texto.')
+    .trim()
+    .toUpperCase() // EXERCÍCIO 1: Sanitizador para converter em letras maiúsculas
+    .isLength({ min: 7, max: 8 }).withMessage('A placa deve ter entre 7 e 8 caracteres.'),
+  
+  body('chassi')
+    .notEmpty().withMessage('O chassi é obrigatório.')
+    .isLength({ min: 17, max: 17 }).withMessage('O chassi deve possuir exatamente 17 caracteres.'),
+    
+  body('capacidadeCargaKg')
+    .notEmpty().withMessage('A capacidade de carga é obrigatória.')
+    .isFloat({ min: 100 }).withMessage('A capacidade de carga deve ser um número maior ou igual a 100 Kg.'),
+
+  // EXERCÍCIO 2: Campo opcional 'anoFabricacao'
+  body('anoFabricacao')
+    .optional()
+    .isInt({ min: 2000, max: anoAtual })
+    .withMessage(`O ano de fabricação deve ser um número inteiro entre 2000 e ${anoAtual}.`)
+];
+
+module.exports = { regrasCadastroVeiculo };
+
+
+EXERCÍCIO 3: 
+
+Crie um middleware customizado para verificar se a requisição possui o cabeçalho `Content-Type: application/json` nas requisições do tipo POST. Caso não possua, retorne HTTP 400 Bad Request. 
+const validarContentType = (req, res, next) => {
+  // Executa a validação apenas para requisições do tipo POST
+  if (req.method === 'POST') {
+    const contentType = req.headers['content-type'];
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      return res.status(400).json({
+        status: "REQUISICAO_INVALIDA",
+        mensagem: "O cabeçalho Content-Type deve ser obrigatoriamente 'application/json'."
+      });
+    }
+  }
+  next();
+};
+
+module.exports = validarContentType;
+
+
+EXERCÍCIO 4: 
+
+Escreva um comando em cURL com payload incorreto e utilize o utilitário `jq` para filtrar e exibir no terminal apenas a lista de mensagens de erro retornada pela API.
+curl -s -X POST http://localhost:3000/api/v1/veiculos \
+  -H "Content-Type: application/json" \
+  -d '{ "placa": "abc", "chassi": "123", "capacidadeCargaKg": 10, "anoFabricacao": 1995 }' \
+  | jq '.erros[].mensagem'
+
+
+curl -s -X POST http://localhost:3000/api/v1/veiculos \
+  -H "Content-Type: application/json" \
+  -d '{ "placa": "abc", "chassi": "123", "capacidadeCargaKg": 10, "anoFabricacao": 1995 }' \
+  | jq '.erros[].mensagem' | jq .
+"A placa deve ter entre 7 e 8 caracteres."
+"O chassi deve possuir exatamente 17 caracteres."
+"A capacidade de carga deve ser um número maior ou igual a 100 Kg."
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula13$ curl -s -X POST http://localhost:3000/api/v1/veiculos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "placa": "abc-1234",
+    "chassi": "19BMSR450XYZ12345",
+    "capacidadeCargaKg": 1500,
+    "anoFabricacao": 2022
+  }' | jq .
+{
+  "mensagem": "Veículo cadastrado com sucesso e dados validados!",
+  "veiculo": {
+    "placa": "abc-1234",
+    "chassi": "19BMSR450XYZ12345",
+    "capacidadeCargaKg": 1500,
+    "registradoEm": "2026-09-06T00:52:48.217Z"
+  }
+}

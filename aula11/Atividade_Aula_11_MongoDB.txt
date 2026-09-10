@@ -23,7 +23,7 @@ metadados: (...)
 EXERCÍCIO 3:
 
 Tente inserir um alerta enviando o campo `nivelSeveridade` com o valor `'INVALIDO'`. Verifique a mensagem de erro de validação do Enum retornado pelo Mongoose.
-$ curl -s -X POST http://localhost:3000/api/v1/alertas \
+$ curl -s -X POST http://localhost:3013/api/v1/alertas \
   -H "Content-Type: application/json" \
   -d '{
     "equipamentoId": "TESTE-ENUM-01",
@@ -38,7 +38,7 @@ $ curl -s -X POST http://localhost:3000/api/v1/alertas \
 EXERCÍCIO 4:
 
 Escreva um comando em cURL para inserir um novo alerta com severidade `'BAIXO'` e insira metadados customizados como tipo de carga e velocidade.
-curl -s -X POST http://localhost:3000/api/v1/alertas \
+curl -s -X POST http://localhost:3013/api/v1/alertas \
   -H "Content-Type: application/json" \
   -d '{
     "equipamentoId": "VOLVO-FH540-02",

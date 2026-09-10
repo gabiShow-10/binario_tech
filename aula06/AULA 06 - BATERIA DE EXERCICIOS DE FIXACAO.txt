@@ -1,7 +1,7 @@
 Exercicio 1:
 Efetue uma requisição GET na rota '/api/v1/ocorrencias' via httpie e valide se a resposta é um array contendo os registros do arquivo 'ocorrencias.json.
 
-http GET http://localhost:3000/api/v1/ocorrencias
+http GET http://localhost:3013/api/v1/ocorrencias
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Connection: keep-alive
@@ -43,7 +43,7 @@ cat ocorrencias.json | jq '[.[] | select(.montadora == "Scania")]'
 Exercicio 3:
 Adicione uma rota GET '/api/v1/ocorrencias/montadora/:nome' que filtra as ocorrências registradas em arquivo de acordo com a montadora informada na URL.
 
-http GET http://localhost:3000/api/v1/ocorrencias/montadora/Scania
+http GET http://localhost:3013/api/v1/ocorrencias/montadora/Scania
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Connection: keep-alive
@@ -98,7 +98,7 @@ gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ cat ocorrencias.j
     "data_registro": "2026-08-13T19:14:02.626Z"
   }
 ]gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ ^C
-gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ http DELETE http://localhost:3000/api/v1/ocorrencias/1786643876978
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula06$ http DELETE http://localhost:3013/api/v1/ocorrencias/1786643876978
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Connection: keep-alive
