@@ -5,7 +5,7 @@ const gerenciadorErros = require('./src/middlewares/gerenciadorErros');
 const validarContentType = require('./src/middlewares/validarContentType'); // Import do middleware
 
 const app = express();
-const PORT = 3000;
+const PORT = 3013;
 
 app.use(cors());
 app.use(express.json());
