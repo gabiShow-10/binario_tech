@@ -1,0 +1,53 @@
+EXERCÍCIO 1:
+Crie um script Bash chamado `testar_simulado.sh` que realize uma requisição `GET` para a rota `/api/v1/health` e grave o HTTP Status Code obtido em um arquivo chamado `health_check.log`.
+
+#!/bin/bash
+
+# Faz a requisição capturando apenas o HTTP Status Code e salva no log
+STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/v1/health)
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] HTTP Status Code: $STATUS_CODE" >> health_check.log
+echo "Status $STATUS_CODE registrado em health_check.log"
+
+
+$ chmod +x testar_simulado.sh 
+$ ./testar_simulado.sh 
+Status 000 registrado em health_check.log
+$ cat health_check.log 
+[2026-09-16 19:06:37] HTTP Status Code: 000
+
+EXERCÍCIO 2:
+Adicione um endpoint POST `/api/v1/auth/token-teste` no servidor da Aula 17 que gere e devolva um JWT assinado válido por 5 minutos para os testes do simulado.
+
+app.post('/api/v1/auth/token-teste', (req, res) => {
+  const payload = {
+    id: "aluno_123",
+    nome: "Aluno Binario Tech",
+    funcao: "Desenvolvedor"
+  };
+
+  const secret = process.env.JWT_SECRET || 'binario_tech_exame_2026_secreto';
+  const token = jwt.sign(payload, secret, { expiresIn: '5m' });
+
+  return res.json({ token });
+}); 
+
+
+
+EXERCÍCIO 3:
+Utilizando cURL e `jq`, faça uma requisição para a rota privada `/api/v1/simulado/status` enviando o token gerado no Exercício 2 e extraia no terminal somente o nome do usuário retornado.
+
+$ TOKEN=$(curl -s -X POST http://localhost:3013/api/v1/auth/token-teste | jq -r .token)
+echo "Token gerado: $TOKEN"
+Token gerado: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFsdW5vXzEyMyIsIm5vbWUiOiJBbHVubyBCaW5hcmlvIFRlY2giLCJmdW5jYW8iOiJEZXNlbnZvbHZlZG9yIiwiaWF0IjoxNzg5NTg2MzEzLCJleHAiOjE3ODk1ODY2MTN9.tYBYkyETvY4t4HQdLjmtZOUXdWu-sb4MNIXUsVywpjM
+
+$ curl -s -H "Authorization: Bearer $TOKEN" http://localhost:3013/api/v1/simulado/status | jq -r .usuario.nome
+Aluno Binario Tech
+
+EXERCÍCIO 4:
+Execute o comando `git status` no diretório raiz do projeto no servidor e certifique-se de que a árvore de trabalho esteja limpa (working tree clean) antes de finalizar a aula.
+
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
