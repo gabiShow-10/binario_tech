@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const conectarBanco = require('./src/config/database');
 const autenticar = require('./src/middlewares/autenticar');
 
@@ -13,6 +14,19 @@ app.use(express.json());
 // Rota Pública de Healthcheck
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: "PRONTO_PARA_EXAME", timestamp: new Date() });
+});
+
+app.post('/api/v1/auth/token-teste', (req, res) => {
+  const payload = {
+    id: "aluno_123",
+    nome: "Aluno Binario Tech",
+    funcao: "Desenvolvedor"
+  };
+
+  const secret = process.env.JWT_SECRET || 'binario_tech_exame_2026_secreto';
+  const token = jwt.sign(payload, secret, { expiresIn: '5m' });
+
+  return res.json({ token });
 });
 
 // Rota Protegida do Simulado
