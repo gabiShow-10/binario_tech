@@ -1,0 +1,70 @@
+QUESTÃO 1 (VALOR: 2.5):
+Crie o endpoint POST `/api/v1/prova/register` que receba `email` e `senha`. A senha deve ter no mínimo 6 caracteres e ser armazenada no banco em formato HASH utilizando o `bcryptjs` (salt 10).
+
+curl -s -X POST http://localhost:3013/api/v1/prova/register \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "candidato@binariotech.com.br", "senha": "123" }' | jq .
+
+{
+  "status": "ERRO",
+  "mensagem": "A senha deve conter no mínimo 6 caracteres."
+}
+
+
+
+curl -s -X POST http://localhost:3013/api/v1/prova/register \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "candidato@binariotech.com.br", "senha": "SenhaForte123" }' | jq .
+
+{
+  "status": "SUCESSO",
+  "mensagem": "Usuário registrado com sucesso!",
+  "usuarioId": "6aabfdedeb4cf90f24f9e59d"
+}
+
+
+QUESTÃO 2 (VALOR: 2.5):
+Crie o endpoint POST `/api/v1/prova/login` que valide as credenciais. Caso corretas, devolva um Token JWT contendo o `id` e `email` do usuário com expiração de 30 minutos.
+
+curl -s -X POST http://localhost:3013/api/v1/prova/login \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "candidato@binariotech.com.br", "senha": "SenhaForte123" }' | jq .
+
+
+{
+  "status": "AUTENTICADO",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhYWJmZGVkZWI0Y2Y5MGYyNGY5ZTU5ZCIsImVtYWlsIjoiY2FuZGlkYXRvQGJpbmFyaW90ZWNoLmNvbS5iciIsImlhdCI6MTc4OTY1NjYwMSwiZXhwIjoxNzg5NjU4NDAxfQ.nlLawMtOpY8wpwQoz4QMOO_EHiz-CpCpw0lK6oEkUXs"
+}
+
+
+QUESTÃO 3 (VALOR: 2.5):
+Crie o middleware `validarJWT.js` e aplique-o na rota protegida GET `/api/v1/prova/relatorio`. Se o token for omitido, retorne HTTP 401. Se for inválido, retorne HTTP 403.
+
+curl -s http://localhost:3013/api/v1/prova/relatorio \
+  -H "Authorization: Bearer token_falso_12345" | jq . 
+
+{
+  "status": "ERRO",
+  "mensagem": "Token inválido ou expirado."
+}
+
+
+curl -s http://localhost:3013/api/v1/prova/relatorio \
+  -H "Authorization: Bearer token_gerado" | jq .
+
+{
+  "status": "SUCESSO",
+  "mensagem": "Acesso autorizado ao relatório confidencial!",
+  "dadosUsuarioLogado": {
+    "id": "6aabfdedeb4cf90f24f9e59d",
+    "email": "candidato@binariotech.com.br",
+    "iat": 1789656601,
+    "exp": 1789658401
+  }
+}
+
+
+QUESTÃO 4 (VALOR: 2.5):
+Crie um script Bash chamado `testar_prova.sh` na pasta `aula18` que cadastre um usuário, faça login, guarde o token retornado em uma variável e acesse a rota protegida exibindo o resultado formatado via `jq`.
+
+
