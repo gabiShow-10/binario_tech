@@ -1,0 +1,22 @@
+┌────┬────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                   │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ api-telemetria-dev     │ default     │ 1.0.0   │ fork    │ 397066   │ 0s     │ 41   │ online    │ 100%     │ 46.7mb   │ gabriel… │ enabled  │
+│ 1  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340817   │ 68m    │ 1    │ online    │ 0%       │ 65.4mb   │ gabriel… │ disabled │
+│ 2  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340818   │ 68m    │ 1    │ online    │ 0%       │ 65.7mb   │ gabriel… │ disabled │
+│ 3  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340851   │ 68m    │ 1    │ online    │ 0%       │ 65.7mb   │ gabriel… │ disabled │
+│ 4  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340852   │ 68m    │ 1    │ online    │ 0%       │ 65.2mb   │ gabriel… │ disabled │
+│ 5  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340875   │ 68m    │ 1    │ online    │ 0%       │ 65.9mb   │ gabriel… │ disabled │
+│ 6  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340876   │ 68m    │ 1    │ online    │ 0%       │ 65.6mb   │ gabriel… │ disabled │
+│ 7  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340899   │ 68m    │ 1    │ online    │ 0%       │ 66.1mb   │ gabriel… │ disabled │
+│ 8  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340900   │ 68m    │ 1    │ online    │ 0%       │ 64.8mb   │ gabriel… │ disabled │
+│ 9  │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340924   │ 68m    │ 1    │ online    │ 0%       │ 65.2mb   │ gabriel… │ disabled │
+│ 10 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340923   │ 68m    │ 1    │ online    │ 0%       │ 66.0mb   │ gabriel… │ disabled │
+│ 11 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340947   │ 68m    │ 1    │ online    │ 0%       │ 65.7mb   │ gabriel… │ disabled │
+│ 12 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340948   │ 68m    │ 1    │ online    │ 0%       │ 65.8mb   │ gabriel… │ disabled │
+│ 13 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340971   │ 68m    │ 1    │ online    │ 0%       │ 65.6mb   │ gabriel… │ disabled │
+│ 14 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340972   │ 68m    │ 1    │ online    │ 0%       │ 65.8mb   │ gabriel… │ disabled │
+│ 15 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340995   │ 68m    │ 1    │ online    │ 0%       │ 65.9mb   │ gabriel… │ disabled │
+│ 16 │ api-telemetria-prod    │ default     │ 1.0.0   │ cluster │ 340996   │ 68m    │ 1    │ online    │ 0%       │ 65.2mb   │ gabriel… │ disabled │
+└────┴────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+host metrics | cpu: 3.4% | ram usage: 7.3% | eno8303: ⇓ 0.024mb/s ⇑ 0.019mb/s drop 12/min | disk: ⇓ 0mb/s ⇑ 0.068mb/s
