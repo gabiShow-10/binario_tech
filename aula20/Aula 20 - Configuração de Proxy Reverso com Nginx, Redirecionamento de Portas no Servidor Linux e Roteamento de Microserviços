@@ -1,0 +1,57 @@
+4. BATERIA DE EXERCICIOS DE FIXACAO
+-------------------------------------------------------------------------------
+EXERCÍCIO 1:
+Configure um novo bloco `location /status-nginx` no Nginx que retorne uma resposta personalizada em JSON contendo HTTP Status 200 sem passar pela aplicação Node.js.
+
+$ sudo nginx -t && sudo nginx -s reload 
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/09/28 02:15:57 [notice] 3344#3344: signal process started
+gabriel_b_silva11@cloudshell:~/curso-pbe1/binario_tech/aula20$ curl -s http://localhost:8080/status-nginx | jq . 
+{
+  "status": "ONLINE",
+  "servico": "Nginx Binario Tech"
+}
+
+EXERCÍCIO 2:
+Adicione uma regra de limite de tamanho de corpo de requisição (`client_max_body_size 2M;`) na configuração do Nginx para barrar requisições com payloads excessivos.
+
+$ dd if=/dev/zero of=/tmp/payload_grande.txt bs=1M count=3
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:8080/api/v1/proxy/info \
+  --data-binary @/tmp/payload_grande.txt -H "Content-Type: application/octet-stream"
+rm /tmp/payload_grande.txt
+
+3+0 records in
+3+0 records out
+3145728 bytes (3.1 MB, 3.0 MiB) copied, 0.00300273 s, 1.0 GB/s
+413
+
+EXERCÍCIO 3:
+Crie um script Bash chamado `analisar_logs_nginx.sh` que leia as últimas 15 linhas do arquivo `/var/log/nginx/access.log` e filtre apenas requisições que retornaram status `200 OK`.
+
+chmod +x analisar_logs_nginx.sh
+
+$ ./analisar_logs_nginx.sh
+Últimas requisições com status 200 OK:
+127.0.0.1 - - [28/Sep/2026:02:11:09 +0000] "GET /api/v1/proxy/info HTTP/1.1" 200 198 "-" "curl/8.5.0"
+127.0.0.1 - - [28/Sep/2026:02:11:24 +0000] "GET /api/v1/proxy/info HTTP/1.1" 200 198 "-" "curl/8.5.0"
+127.0.0.1 - - [28/Sep/2026:02:11:54 +0000] "GET /api/v1/proxy/info HTTP/1.1" 200 198 "-" "curl/8.5.0"
+127.0.0.1 - - [28/Sep/2026:02:13:50 +0000] "GET /api/v1/proxy/info HTTP/1.1" 200 198 "-" "curl/8.5.0"
+127.0.0.1 - - [28/Sep/2026:02:16:03 +0000] "GET /status-nginx HTTP/1.1" 200 50 "-" "curl/8.5.0"
+127.0.0.1 - - [28/Sep/2026:02:21:47 +0000] "GET /api/v1/proxy/info HTTP/1.1" 200 198 "-" "curl/8.5.0"
+
+
+EXERCÍCIO 4:
+Versione e envie todas as alterações da `aula20` para a branch `main` do GitHub utilizando os comandos `git add`, `git commit` e `git push origin main`.
+
+git push origin main
+Enumerating objects: 60, done.
+Counting objects: 100% (60/60), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (35/35), done.
+Writing objects: 100% (35/35), 14.56 KiB | 1.62 MiB/s, done.
+Total 35 (delta 20), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (20/20), completed with 20 local objects.
+To https://github.com/gabiShow-10/binario_tech.git
+   b86dd31..7798f3c  main -> main
+===============================================================================
