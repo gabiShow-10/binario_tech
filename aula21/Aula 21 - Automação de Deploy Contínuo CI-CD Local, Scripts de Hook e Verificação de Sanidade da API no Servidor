@@ -3,13 +3,39 @@
 EXERCÍCIO 1:
 Altere a versão no arquivo `server.js` para `"1.0.1"`, faça o commit no Git local e execute o script `./deploy.sh` confirmando se a nova versão foi refletida no endpoint `/api/v1/versao`.
 
+curl -s http://localhost:3013/api/v1/versao | jq '.versao'
+"1.0.1"
+
 EXERCÍCIO 2:
 Adicione ao script `deploy.sh` um passo que gere um arquivo de log chamado `deploy_history.log` gravando a data, hora e o hash do último commit (`git rev-parse --short HEAD`) a cada deploy realizado.
+
+$ cat deploy_history.log
+2026-09-28 02:44:40 - Deploy com sucesso - Commit: 6cc0422
 
 EXERCÍCIO 3:
 Crie um Git Hook de `post-commit` (`.git/hooks/post-commit`) no repositório do servidor que invoque automaticamente o script `deploy.sh` sempre que um novo commit for realizado na branch `main`.
 
+#!/bin/bash
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" == "main" ]; then
+  echo "Commit detectado na branch main. Disparando deploy automático em segundo plano..."
+  cd ~/binario_tech/aula21 && nohup bash deploy.sh > deploy_hook.log 2>&1 &
+fi
+
+ESSE SO FUNCIONA NO SERVIDOR DA SALA
+
 EXERCÍCIO 4:
 Versione os arquivos da `aula21` (`server.js`, `deploy.sh`, `package.json`) e envie as atualizações para o repositório remoto no GitHub.
+
+$ git push origin main
+Enumerating objects: 14, done.
+Counting objects: 100% (14/14), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (13/13), 11.50 KiB | 2.30 MiB/s, done.
+Total 13 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 1 local object.
+To https://github.com/gabiShow-10/binario_tech.git
+   6710ce1..35f7584  main -> main
 
 ===============================================================================
