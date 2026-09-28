@@ -1,0 +1,15 @@
+4. BATERIA DE EXERCÍCIOS DE FIXAÇÃO
+-------------------------------------------------------------------------------
+EXERCÍCIO 1:
+Altere a versão no arquivo `server.js` para `"1.0.1"`, faça o commit no Git local e execute o script `./deploy.sh` confirmando se a nova versão foi refletida no endpoint `/api/v1/versao`.
+
+EXERCÍCIO 2:
+Adicione ao script `deploy.sh` um passo que gere um arquivo de log chamado `deploy_history.log` gravando a data, hora e o hash do último commit (`git rev-parse --short HEAD`) a cada deploy realizado.
+
+EXERCÍCIO 3:
+Crie um Git Hook de `post-commit` (`.git/hooks/post-commit`) no repositório do servidor que invoque automaticamente o script `deploy.sh` sempre que um novo commit for realizado na branch `main`.
+
+EXERCÍCIO 4:
+Versione os arquivos da `aula21` (`server.js`, `deploy.sh`, `package.json`) e envie as atualizações para o repositório remoto no GitHub.
+
+===============================================================================
