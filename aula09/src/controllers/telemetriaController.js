@@ -21,7 +21,7 @@ module.exports = {
   // EXERCÍCIO 2: Valida se o veículo existe antes de registrar a leitura
   async registrarLeitura(req, res) {
     try {
-      const { veiculo_id, temperatura_motor, velocidade, latitude, longitude } = req.body;
+      const { veiculo_id, temperatura_motor, velocidade } = req.body;
 
       const veiculo = await db('veiculos').where({ id: veiculo_id }).first();
       if (!veiculo) {
@@ -31,13 +31,10 @@ module.exports = {
       const [id] = await db('telemetria').insert({
         veiculo_id,
         temperatura_motor,
-        velocidade,
-        latitude,
-        longitude,
-        data_hora: new Date()
+        velocidade
       });
 
-      return res.status(201).json({ id, veiculo_id, temperatura_motor, velocidade, latitude, longitude });
+      return res.status(201).json({ id, veiculo_id, temperatura_motor, velocidade });
     } catch (error) {
       return res.status(500).json({ erro: 'Erro interno ao salvar leitura de telemetria.' });
     }

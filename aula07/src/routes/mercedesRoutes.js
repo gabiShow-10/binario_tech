@@ -4,3 +4,5 @@ const mercedesController = require('../controllers/mercedesController');
 
 router.get('/', mercedesController.listarTelemetria);
 router.post('/', mercedesController.registrarTelemetria);
+
+module.exports = router;

@@ -1,16 +1,16 @@
-const validarContentType = (req, res, next) => {
-  // Executa a validação apenas para requisições do tipo POST
-  if (req.method === 'POST') {
-    const contentType = req.headers['content-type'];
-    
-    if (!contentType || !contentType.includes('application/json')) {
-      return res.status(400).json({
-        status: "REQUISICAO_INVALIDA",
-        mensagem: "O cabeçalho Content-Type deve ser obrigatoriamente 'application/json'."
-      });
-    }
+const { validationResult } = require('express-validator');
+
+const validarRequisicao = (req, res, next) => {
+  const erros = validationResult(req);
+
+  if (!erros.isEmpty()) {
+    return res.status(422).json({
+      status: "ERRO_VALIDACAO",
+      erros: erros.array().map(err => ({ campo: err.path, mensagem: err.msg }))
+    });
   }
+
   next();
 };
 
-module.exports = validarContentType;
+module.exports = validarRequisicao;

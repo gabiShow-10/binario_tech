@@ -5,7 +5,7 @@ echo "  AUDITORIA DE PROCESSOS PM2 - BINÁRIO TECH"
 echo "=============================================="
 
 STATUS=$(pm2 jlist | jq -r '.[0].pm2_env.status')
-RESTARTS=$(pm2 jlist | jq -r '.[0].pm2_env_restart_time')
+RESTARTS=$(pm2 jlist | jq -r '.[0].pm2_env.restart_time')
 PID=$(pm2 jlist | jq -r '.[0].pid')
 
 echo "Status Atual: $STATUS"

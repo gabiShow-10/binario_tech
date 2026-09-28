@@ -1,8 +1,8 @@
-=== INICIANDO TESTES CRUD - Thu Aug  6 07:50:44 PM UTC 2026 ===
+=== INICIANDO TESTES CRUD - Fri Sep 25 07:02:47 PM UTC 2026 ===
 
 1. Cadastrando Veículo 1 (DAF)...
 {
-  "id": 3,
+  "id": 4,
   "placa": "ABC-9999",
   "montadora": "DAF",
   "modelo": "XF",
@@ -11,7 +11,7 @@
 
 2. Cadastrando Veículo 2 (Iveco)...
 {
-  "id": 4,
+  "id": 5,
   "placa": "XYZ-8888",
   "montadora": "Iveco",
   "modelo": "Hi-Way",
