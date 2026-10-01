@@ -8,7 +8,7 @@ echo "=================================================="
 REPO_DIR="$HOME/curso-pbe1/binario_tech"
 
 APP_NAME="api-cicd"
-PORT=3013
+PORT=3090
 
 echo "[1/4] Atualizando código-fonte do repositório remoto..."
 cd $REPO_DIR

@@ -2053,8 +2053,6 @@ Testei os dois lado a lado depois de um crash provocado: com o ponto, retornou `
 
 ### Aula 20 — Proxy Reverso com Nginx
 
-> Esta aula não tinha código seu ainda (você me mandou só o plano de aula do professor) — então aqui embaixo está o passo a passo pra montar do zero, com a resolução de cada exercício. Diferente das aulas anteriores, não tem "✅ já no código" porque ainda não existe o seu código dela.
-
 **Preparação (no servidor Linux da sala, via SSH):**
 
 ```bash
@@ -2325,8 +2323,6 @@ Confira antes, no servidor da escola:
 ---
 
 ### Aula 21 — CI/CD Local e Automação de Deploy
-
-> Assim como a aula 20, esta também não tinha código seu ainda — segue o passo a passo do zero com a resolução dos exercícios.
 
 **Preparação:**
 

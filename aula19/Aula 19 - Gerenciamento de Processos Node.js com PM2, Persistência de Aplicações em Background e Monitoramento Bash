@@ -1,0 +1,87 @@
+EXERCÍCIO 1: 
+
+Configure o PM2 para limitar o uso máximo de memória do processo `api-telemetria` em 100MB utilizando a flag `--max-memory-restart 100M`. 
+
+pm2 restart api-telemetria --max-memory-restart 100M
+
+
+EXERCÍCIO 2: 
+
+Crie um arquivo de ecossistema do PM2 (`ecosystem.config.js`) definindo as variáveis de ambiente de Desenvolvimento e Produção para a aplicação da `aula19`. 
+
+$ cat ecosystem.config.js
+module.exports = {
+  apps: [
+    {
+      name: 'api-telemetria-dev',
+      script: 'server.js',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'development',
+        PORT: 3013
+      },
+      watch: true, // Reinicia automaticamente ao alterar arquivos em ambiente de desenvolvimento
+      ignore_watch: ['node_modules', 'logs'],
+      max_memory_restart: '200M'
+    },
+    {
+      name: 'api-telemetria-prod',
+      script: 'server.js',
+      instances: 'max', // Utiliza todos os núcleos disponíveis da CPU em cluster
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 8013
+      },
+      watch: false,
+      max_memory_restart: '500M',
+      error_file: './logs/err.log',
+      out_file: './logs/out.log',
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }
+  ]
+};
+
+pm2 start ecosystem.config.js --env development
+
+pm2 start ecosystem.config.js --env production
+
+EXERCÍCIO 3: 
+
+Escreva um comando em Bash que salve a lista de processos ativos do PM2 e persista a configuração atual para reinicialização do sistema operacional (`pm2 save`). 
+
+comando: pm2-process
+
+bash:
+echo "=========================================="
+echo " LISTA DE PROCESSOS ATIVOS - BINARIO TECH"
+echo "=========================================="
+
+echo "Salvando todos os processos ativos do pm2..."
+
+pm2 save
+
+sleep 2
+
+echo "Gerando log atualizado..."
+
+pm2 status > /home/gabriel.barbosa/binario_tech/aula19/processos.log
+
+sleep 2
+
+echo "resultado:"
+
+cat /home/gabriel.barbosa/binario_tech/aula19/processos.log
+
+
+EXERCÍCIO 4: 
+
+Realize o commit e o push das alterações da `aula19` para a branch `main` do GitHub garantindo o versionamento correto no servidor.
+
+git add .
+git commit -m "feat: Conclusão e alterações - Aula 19"
+git push origin main
+
+
