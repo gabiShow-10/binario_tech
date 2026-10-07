@@ -8,7 +8,7 @@ Este README tem duas partes:
 2. **Guia de estudo — passo a passo de cada aula**, com a resolução de todos os exercícios propostos pelo professor, pensado para revisão rápida antes da prova surpresa (o professor pode pedir para refazer qualquer aula, então cada seção aqui é auto-suficiente: o que foi pedido, como resolver, e o resultado esperado).
 
 > Sempre que o exercício já estava resolvido no seu código, isso está marcado com **✅ já no código**, com uma nota curta sobre onde e como foi feito — sem repetir o exercício inteiro.
-> Sempre que encontrei uma diferença entre o que está no ZIP e o que o exercício pede (rota que não bate, campo que não existe na tabela, etc.), isso está marcado com **⚠️ atenção** e vem com a correção pronta para copiar.
+> Sempre que há uma diferença entre o que está no ZIP e o que o exercício pede (rota que não bate, campo que não existe na tabela, etc.), isso está marcado com **⚠️ atenção** e vem com a correção pronta para copiar.
 
 ---
 
@@ -39,6 +39,7 @@ Este README tem duas partes:
   - [Aula 19 — PM2 e gerenciamento de processos](#aula-19--pm2-e-gerenciamento-de-processos)
   - [Aula 20 — Proxy Reverso com Nginx](#aula-20--proxy-reverso-com-nginx)
   - [Aula 21 — CI/CD Local e Automação de Deploy](#aula-21--cicd-local-e-automação-de-deploy)
+  - [Aula 22 — Conteinerização com Docker](#aula-22--conteinerização-com-docker)
 - [5. Observações finais para a prova](#5-observações-finais-para-a-prova)
 
 ---
@@ -57,11 +58,11 @@ A alteração foi aplicada em:
 | Variáveis de ambiente (`.env`) | 11, 12, 14, 18, 19 |
 | Scripts de teste (`testar_*.sh`, `teste_*.sh`, `auditoria_*.sh`, `limpar_dados.sh`) | 02, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14 |
 
-**Exceção:** a aula 03 (`telemetria.js`) utiliza a porta **3001**. Essa porta foi definida propositalmente desde o início para permitir que o servidor de telemetria rodasse em paralelo ao servidor principal, portanto não foi alterada.
-
 **Exceção 2:** a aula 19 usa duas portas de propósito — **3013** para o processo de desenvolvimento (`api-telemetria-dev`, no `ecosystem.config.js`) e **8013** para o processo de produção em cluster (`api-telemetria-prod`), para não haver conflito entre os dois processos rodando ao mesmo tempo no PM2.
 
-**Exceção 3:** a aula 20 usa a porta **3013** para a API interna do Node (por trás do Nginx, a porta do seu número de chamada) e a **8080** pra acessar via proxy reverso — de propósito, é o ponto central da aula (o Nginx escuta na 8080 e repassa pra 3013). A aula 21 também usa a **3013** (a porta do seu número de chamada), mas nunca junto com a aula 20 no PM2: pare uma antes de subir a outra.
+**Exceção 3:** a aula 20 usa a porta **3013** para a API interna do Node (por trás do Nginx, a porta do seu número de chamada) e a **8080** pra acessar via proxy reverso — de propósito, é o ponto central da aula (o Nginx escuta na 8080 e repassa pra 3013). A aula 21 usa a porta **3090**, separada da 3013 — pode ficar rodando junto com a aula 20 no PM2 sem conflito.
+
+**Exceção 4:** a aula 22 usa a porta **4000** dentro do container Docker e expõe pro host nas portas **8082** (container principal) e **8083** (segundo container, exercício 2) — valores fixos do plano de aula, sem relação com o número de chamada.
 
 ### 1.2 Padronização dos nomes de arquivos
 
@@ -384,7 +385,7 @@ bash testar_servidor.sh
 
 ### Aula 03 — Múltiplos servidores e portas
 
-> Esta é a exceção da porta: `telemetria.js` roda na **3001**, propositalmente, para funcionar em paralelo ao servidor principal (3013). Não mexer nessa porta.
+> A porta deste servidor é a **3013**, igual ao resto do projeto. Por rodar sozinho (sem outro servidor junto na mesma hora), não precisa de uma porta separada.
 
 **Preparação:**
 
@@ -400,7 +401,7 @@ sudo apt-get update && sudo apt-get install -y jq httpie
 ```js
 const express = require('express');
 const app = express();
-const PORT = 3001;
+const PORT = 3013;
 
 app.use(express.json());
 
@@ -427,12 +428,12 @@ node telemetria.js &
 
 **Exercício 1 — filtrar `modelo` com jq**
 ```bash
-curl -s http://localhost:3001/api/v1/scania | jq '.modelo'
+curl -s http://localhost:3013/api/v1/scania | jq '.modelo'
 ```
 
 **Exercício 2 — httpie salvando em arquivo**
 ```bash
-http GET http://localhost:3001/api/v1/mercedes > mercedes.json
+http GET http://localhost:3013/api/v1/mercedes > mercedes.json
 ```
 ✅ **já no código** — `mercedes.json` presente.
 
@@ -463,7 +464,7 @@ app.listen(PORT, () => {
 ```
 Reiniciar o processo e testar (rota isolada, não mexe nas outras):
 ```bash
-curl -s http://localhost:3001/api/v1/volvo | jq .
+curl -s http://localhost:3013/api/v1/volvo | jq .
 ```
 ✅ **já no código.**
 
@@ -484,7 +485,7 @@ bash testar_telemetria.sh > relatorio.log
 
 **Exercício 7 — filtrar dois campos numa chamada só do jq**
 ```bash
-curl -s http://localhost:3001/api/v1/vw | jq '{montadora, status}'
+curl -s http://localhost:3013/api/v1/vw | jq '{montadora, status}'
 ```
 Resultado esperado: `{"montadora": "Volkswagen", "status": "ALERTA"}`.
 
@@ -837,7 +838,7 @@ bash limpar_dados.sh
 
 ### Aula 07 — Arquitetura em camadas (MVC) e roteamento avançado
 
-> ✅ **corrigido — o servidor desta aula não subia do jeito que veio no ZIP original.** Tinha dois bugs pequenos que travavam o `node server.js` inteiro. Já apliquei os dois no pacote `binario_tech_correcoes.zip` (testados e confirmados por mim antes de mandar). Deixei a explicação de cada um abaixo porque ajuda a entender o erro — se a prova pedir pra montar essa aula do zero, é bom saber onde é fácil escorregar.
+> ✅ **corrigido — o servidor desta aula não subia do jeito que veio no ZIP original.** Tinha dois bugs pequenos que travavam o `node server.js` inteiro. Os dois já estão corrigidos no pacote `binario_tech_correcoes.zip` (confirmado rodando o servidor depois da correção). A explicação de cada um fica abaixo porque ajuda a entender o erro — se a prova pedir pra montar essa aula do zero, é bom saber onde é fácil escorregar.
 
 **Preparação:**
 
@@ -973,7 +974,7 @@ curl -s -X POST http://localhost:3013/api/v1/veiculos -H "Content-Type: applicat
 curl -s http://localhost:3013/api/v1/veiculos | jq .
 ```
 
-✅ **corrigido — typo no `testar_banco.sh`.** No passo `[2]` (cadastro do veículo Mercedes-Benz), o header original estava escrito como `"Content-Type: application.json"` (ponto em vez de barra). Como o Express só faz o parse do corpo quando o `Content-Type` é exatamente `application/json`, esse passo caía no `400 Bad Request` ("campos obrigatórios") em vez do `201 Created` esperado — testei e confirmei esse comportamento antes da correção. Já apliquei a correção no `binario_tech_correcoes.zip`, a linha do passo `[2]` ficou:
+✅ **corrigido — typo no `testar_banco.sh`.** No passo `[2]` (cadastro do veículo Mercedes-Benz), o header original estava escrito como `"Content-Type: application.json"` (ponto em vez de barra). Como o Express só faz o parse do corpo quando o `Content-Type` é exatamente `application/json`, esse passo caía no `400 Bad Request` ("campos obrigatórios") em vez do `201 Created` esperado — confirmado rodando o script antes da correção. A correção já está no `binario_tech_correcoes.zip`; a linha do passo `[2]` ficou:
 ```bash
 curl -s -X POST http://localhost:3013/api/v1/veiculos \
   -H "Content-Type: application/json" \
@@ -1055,7 +1056,7 @@ npx knex migrate:latest
 
 ### Aula 09 — Relacionamentos, Foreign Keys e Joins
 
-> ✅ **corrigido — o `POST /api/v1/telemetria` devolvia 500.** Bug confirmado rodando o servidor: o `registrarLeitura` tentava gravar campos que não existem na tabela. Já apliquei a correção no `binario_tech_correcoes.zip`.
+> ✅ **corrigido — o `POST /api/v1/telemetria` devolvia 500.** Bug confirmado rodando o servidor: o `registrarLeitura` tentava gravar campos que não existem na tabela. A correção já está no `binario_tech_correcoes.zip`.
 
 **Preparação:**
 
@@ -1087,7 +1088,7 @@ const [id] = await db('telemetria').insert({
   data_hora: new Date()   // <- a coluna certa se chama 'capturado_em' e já tem valor padrão
 });
 ```
-A tabela `telemetria` só tem `id`, `veiculo_id`, `velocidade`, `temperatura_motor` e `capturado_em` (a migration não criou `latitude`, `longitude` nem `data_hora`). O Knex tentava gravar colunas inexistentes e o SQLite recusava a query, caindo no `catch` e devolvendo `500`. Testei e confirmei o erro antes da correção. A correção (já aplicada) — removeu os campos que a tabela não tem:
+A tabela `telemetria` só tem `id`, `veiculo_id`, `velocidade`, `temperatura_motor` e `capturado_em` (a migration não criou `latitude`, `longitude` nem `data_hora`). O Knex tentava gravar colunas inexistentes e o SQLite recusava a query, caindo no `catch` e devolvendo `500`. Erro confirmado rodando o servidor antes da correção. A correção (já aplicada) — removeu os campos que a tabela não tem:
 ```js
 const { veiculo_id, temperatura_motor, velocidade } = req.body;
 // ...
@@ -1537,7 +1538,7 @@ const validarContentType = (req, res, next) => {
 module.exports = validarContentType;
 ```
 
-Como esse middleware nunca chamava `validationResult(req)`, as regras de `veiculoValidator.js` (placa, chassi, capacidade) eram registradas mas **nunca checadas** — qualquer payload passava direto para o controller e recebia `201`, mesmo estando incompleto ou com tamanho errado. Testei e confirmei antes da correção: `{"placa":"ABC","chassi":"123","capacidadeCargaKg":50}` retornava `201` em vez do `422` esperado.
+Como esse middleware nunca chamava `validationResult(req)`, as regras de `veiculoValidator.js` (placa, chassi, capacidade) eram registradas mas **nunca checadas** — qualquer payload passava direto para o controller e recebia `201`, mesmo estando incompleto ou com tamanho errado. Confirmado antes da correção: `{"placa":"ABC","chassi":"123","capacidadeCargaKg":50}` retornava `201` em vez do `422` esperado.
 
 A correção (já aplicada no `binario_tech_correcoes.zip`) — o conteúdo de `validarRequisicao.js` voltou a ser este:
 ```js
@@ -1851,7 +1852,7 @@ curl -s http://localhost:3013/api/v1/health | jq .
 
 **Exercício 1 — `testar_simulado.sh` salvando o status em `health_check.log`**
 
-✅ **corrigido — o script apontava para a porta errada.** Ele testava `http://localhost:3000/...`, mas o servidor sobe na **3013** (conforme `.env`). Por isso o `health_check.log` salvo no repositório original mostrava `Status Code: 000` (conexão recusada). Já corrigi a URL dentro do script (aplicado no `binario_tech_correcoes.zip`):
+✅ **corrigido — o script apontava para a porta errada.** Ele testava `http://localhost:3000/...`, mas o servidor sobe na **3013** (conforme `.env`). Por isso o `health_check.log` salvo no repositório original mostrava `Status Code: 000` (conexão recusada). A URL já está corrigida dentro do script (aplicado no `binario_tech_correcoes.zip`):
 ```bash
 STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3013/api/v1/health)
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] HTTP Status Code: $STATUS_CODE" >> health_check.log
@@ -1907,7 +1908,7 @@ Resultado esperado: `nothing to commit, working tree clean` (depois de dar `git 
 
 ### Aula 18 — Avaliação prática intermediária
 
-> ✅ **corrigido — faltava o `.env` desta pasta.** Como o `.gitignore` da raiz do projeto ignora todo `.env` (de propósito, é boa prática), ele não veio dentro do ZIP/repositório original. Sem ele, `process.env.JWT_SECRET` ficava `undefined` e o `jwt.sign(...)` quebrava com erro ao tentar fazer login. Já incluí o `.env` pronto dentro do `binario_tech_correcoes.zip` (é só extrair, como qualquer outro arquivo do pacote):
+> ✅ **corrigido — faltava o `.env` desta pasta.** Como o `.gitignore` da raiz do projeto ignora todo `.env` (de propósito, é boa prática), ele não veio dentro do ZIP/repositório original. Sem ele, `process.env.JWT_SECRET` ficava `undefined` e o `jwt.sign(...)` quebrava com erro ao tentar fazer login. O `.env` pronto já está incluído dentro do `binario_tech_correcoes.zip` (é só extrair, como qualquer outro arquivo do pacote):
 > ```
 > PORT=3013
 > MONGO_URI=mongodb://127.0.0.1:27017/binario_tech_prova
@@ -2003,7 +2004,7 @@ pm2 monit
 curl -s http://localhost:3013/api/v1/telemetria/crash | jq .
 pm2 list   # o contador de "restarts" deve subir e o status voltar para "online"
 ```
-Testei isso de verdade (derrubando o processo com `/crash` e olhando o `pm2 jlist`): o contador de restart realmente sobe de `0` para `1` e o processo volta sozinho — o PM2 está fazendo exatamente o que devia.
+Teste de resiliência confirmado (derrubando o processo com `/crash` e olhando o `pm2 jlist`): o contador de restart sobe de `0` para `1` e o processo volta sozinho — o PM2 faz exatamente isso.
 
 **Exercício 1 — `--max-memory-restart 100M` via flag**
 ```bash
@@ -2014,7 +2015,7 @@ Testado e funcionando.
 
 **Exercício 2 — `ecosystem.config.js` com dev/prod**
 
-✅ **já no código** — só um detalhe: o exercício 1 pede especificamente `100M` via flag, mas no `ecosystem.config.js` você consolidou os dois exercícios usando `max_memory_restart: '200M'` (dev) e `'500M'` (prod) em vez de `100M`. Funciona igual (mesmo mecanismo), só não é o valor exato do enunciado — se a prova cobrar o número certo, é só trocar para `'100M'` no app `api-telemetria-dev`. Testei o arquivo inteiro rodando `pm2 start ecosystem.config.js`: os dois processos (`api-telemetria-dev` na 3013, `api-telemetria-prod` na 8013) sobem e respondem normalmente.
+✅ **já no código** — só um detalhe: o exercício 1 pede especificamente `100M` via flag, mas no `ecosystem.config.js` você consolidou os dois exercícios usando `max_memory_restart: '200M'` (dev) e `'500M'` (prod) em vez de `100M`. Funciona igual (mesmo mecanismo), só não é o valor exato do enunciado — se a prova cobrar o número certo, é só trocar para `'100M'` no app `api-telemetria-dev`. Rodando `pm2 start ecosystem.config.js` por inteiro, os dois processos (`api-telemetria-dev` na 3013, `api-telemetria-prod` na 8013) sobem e respondem normalmente.
 ```bash
 pm2 start ecosystem.config.js
 curl -s http://localhost:3013/api/v1/telemetria/status | jq .
@@ -2041,17 +2042,19 @@ git push origin main
 ```bash
 RESTARTS=$(pm2 jlist | jq -r '.[0].pm2_env_restart_time')   # ERRADO — faltava o ponto
 ```
-Testei isso rodando o PM2 de verdade: como não existe nenhuma chave chamada literalmente `pm2_env_restart_time` no JSON do `pm2 jlist` (o campo `restart_time` fica **dentro** do objeto `pm2_env`), o `jq` sempre devolvia `null`, então o script sempre mostrava `Contador de Restarts: null`, mesmo depois de vários crashes de verdade. A correção (já aplicada no `binario_tech_correcoes.zip`) — faltava o ponto entre `pm2_env` e `restart_time`:
+Rodando o PM2 de verdade: como não existe nenhuma chave chamada literalmente `pm2_env_restart_time` no JSON do `pm2 jlist` (o campo `restart_time` fica **dentro** do objeto `pm2_env`), o `jq` sempre devolvia `null`, então o script sempre mostrava `Contador de Restarts: null`, mesmo depois de vários crashes de verdade. A correção (já aplicada no `binario_tech_correcoes.zip`) — faltava o ponto entre `pm2_env` e `restart_time`:
 ```bash
 RESTARTS=$(pm2 jlist | jq -r '.[0].pm2_env.restart_time')   # CERTO
 ```
-Testei os dois lado a lado depois de um crash provocado: com o ponto, retornou `1` (o valor certo); sem o ponto, retornou `null`.
+Comparando os dois lado a lado depois de um crash provocado: com o ponto, retornou `1` (o valor certo); sem o ponto, retornou `null`.
 
 > Nota extra sobre esse mesmo script: a linha `pm2 restart api-telemetria` no final só funciona se o processo tiver sido iniciado com esse nome exato (Passo 6, `pm2 start server.js --name "api-telemetria"`). Se você estiver usando o `ecosystem.config.js` do exercício 2, os nomes reais são `api-telemetria-dev` e `api-telemetria-prod` — troque o nome nessa linha para o que estiver rodando de fato (confira com `pm2 list`).
 
 ---
 
 ### Aula 20 — Proxy Reverso com Nginx
+
+> Esta aula ainda não tem código, só o plano de aula do professor — passo a passo pra montar do zero, com a resolução de cada exercício. Diferente das aulas anteriores, não tem "✅ já no código" porque ainda não existe código dela.
 
 **Preparação (no servidor Linux da sala, via SSH):**
 
@@ -2088,9 +2091,9 @@ sudo nginx -s reload      # recarregar a configuração (substitui o "systemctl 
 sudo nginx -s stop        # parar
 ps aux | grep nginx       # conferir se está rodando (deve aparecer "master process" e "worker process")
 ```
-✅ **testei esses comandos de verdade** num ambiente sem systemd (igual ao Cloud Shell): `nginx` sobe, `nginx -s reload` recarrega e o proxy passa a responder na porta 8080.
+✅ **confirmado** num ambiente sem systemd (igual ao Cloud Shell): `nginx` sobe, `nginx -s reload` recarrega e o proxy passa a responder na porta 8080.
 
-> **Se o `sudo nginx` falhar com** `socket() [::]:80 failed (97: Address family not supported by protocol)`**:** o site padrão do Nginx tenta escutar em IPv6 e o ambiente não suporta. Isso aconteceu no meu ambiente de teste e a solução que funcionou foi remover o site padrão, que não é usado nesta aula (a aula usa a porta 8080 no arquivo `binario_aluno.conf`, sem IPv6):
+> **Se o `sudo nginx` falhar com** `socket() [::]:80 failed (97: Address family not supported by protocol)`**:** o site padrão do Nginx tenta escutar em IPv6 e o ambiente não suporta — acontece em ambientes sem suporte a IPv6 (como containers). A solução é remover o site padrão, que não é usado nesta aula (a aula usa a porta 8080 no arquivo `binario_aluno.conf`, sem IPv6):
 > ```bash
 > sudo rm /etc/nginx/sites-enabled/default
 > sudo nginx -t && sudo nginx
@@ -2166,11 +2169,11 @@ server {
 }
 ```
 
-> **Testei isso de verdade** (instalei um Nginx num ambiente Linux e montei o cenário inteiro): só criar o arquivo em `sites-available` **não é suficiente** — confirmei que dá `000` (conexão recusada) na porta 8080 se parar por aí. Esse diretório é só um "estoque" de configurações; o Nginx só carrega o que está em `sites-enabled`. É preciso criar o link simbólico:
+> **Confirmado na prática:** só criar o arquivo em `sites-available` **não é suficiente** — fica em `000` (conexão recusada) na porta 8080 se parar por aí. Esse diretório é só um "estoque" de configurações; o Nginx só carrega o que está em `sites-enabled`. É preciso criar o link simbólico:
 > ```bash
 > sudo ln -s /etc/nginx/sites-available/binario_aluno.conf /etc/nginx/sites-enabled/binario_aluno.conf
 > ```
-> (se o servidor da sala já vier configurado de outro jeito, ou se esse link já existir, ignore esse passo.) Com o link criado, testei de novo: o `curl` na porta 8080 passa a devolver o JSON do Node normalmente — a única diferença entre "não funciona" e "funciona" foi exatamente esse link.
+> (se o servidor da sala já vier configurado de outro jeito, ou se esse link já existir, ignore esse passo.) Com o link criado, o `curl` na porta 8080 passa a devolver o JSON do Node normalmente — a única diferença entre "não funciona" e "funciona" é exatamente esse link.
 
 ```bash
 sudo nginx -t
@@ -2227,7 +2230,7 @@ server {
 sudo nginx -t && sudo nginx -s reload      # (ou systemctl reload nginx, fora do Cloud Shell)
 curl -s http://localhost:8080/status-nginx | jq .
 ```
-Resultado esperado: `{"status":"ONLINE","servico":"Nginx Binario Tech"}` com `200`, mesmo se o Node (porta 3013) estiver derrubado — é o Nginx respondendo sozinho. ✅ **testei os dois cenários** (Node no ar e Node derrubado) e bateu certinho nos dois.
+Resultado esperado: `{"status":"ONLINE","servico":"Nginx Binario Tech"}` com `200`, mesmo se o Node (porta 3013) estiver derrubado — é o Nginx respondendo sozinho. ✅ **confirmado nos dois cenários** (Node no ar e Node derrubado).
 
 **Exercício 2 — limitar o tamanho do corpo da requisição**
 ```nginx
@@ -2256,7 +2259,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:8080/api/v1/pr
   --data-binary @/tmp/payload_grande.txt -H "Content-Type: application/octet-stream"
 rm /tmp/payload_grande.txt
 ```
-Resultado esperado: `413` (Request Entity Too Large). ✅ **testei** com um arquivo de 3 MB de verdade — deu exatamente `413`.
+Resultado esperado: `413` (Request Entity Too Large). ✅ **confirmado** com um arquivo de 3 MB — deu exatamente `413`.
 
 **Exercício 3 — `analisar_logs_nginx.sh`**
 ```bash
@@ -2272,7 +2275,7 @@ tail -n 15 /var/log/nginx/access.log | grep '" 200 '
 chmod +x analisar_logs_nginx.sh
 ./analisar_logs_nginx.sh
 ```
-✅ **testei** — gerei requisições com 200, 404, 413 e 502 misturadas no log, e o script filtrou certinho, mostrando só as de 200. Se der erro de permissão lendo `/var/log/nginx/access.log`, rode com `sudo ./analisar_logs_nginx.sh` (esse log geralmente só é legível por root ou pelo grupo `adm`).
+✅ **confirmado** — com requisições de `200`, `404`, `413` e `502` misturadas no log, o script filtra certinho, mostrando só as de `200`. Se der erro de permissão lendo `/var/log/nginx/access.log`, rode com `sudo ./analisar_logs_nginx.sh` (esse log geralmente só é legível por root ou pelo grupo `adm`).
 
 **Exercício 4 — versionar a aula 20**
 
@@ -2313,7 +2316,7 @@ sudo nginx -t
 sudo systemctl reload nginx                # se der erro de systemd: sudo nginx -s reload (ou sudo nginx, se ainda não estiver rodando)
 ./testar_nginx.sh
 ```
-✅ **testei a parte de copiar o `.conf` do repositório para `/etc/nginx`, ativar e chamar** (`/status-nginx` deu `200`). Não testei o servidor da escola em si, porque não tenho acesso a ele.
+✅ **confirmado: copiar o `.conf` do repositório para `/etc/nginx`, ativar e chamar** (`/status-nginx` deu `200`). Pendente de confirmar direto no servidor da escola — rodar esse fluxo lá antes da prova.
 
 Confira antes, no servidor da escola:
 - `nginx -v` mostra a versão? Se não, precisa instalar (`sudo apt install -y nginx`).
@@ -2323,6 +2326,8 @@ Confira antes, no servidor da escola:
 ---
 
 ### Aula 21 — CI/CD Local e Automação de Deploy
+
+> Assim como a aula 20, esta também ainda não tem código — segue o passo a passo do zero com a resolução dos exercícios.
 
 **Preparação:**
 
@@ -2356,7 +2361,7 @@ npm install
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3013;
+const PORT = process.env.PORT || 3090;
 
 app.use(express.json());
 
@@ -2378,9 +2383,9 @@ app.listen(PORT, () => {
 pm2 start server.js --name "api-cicd"
 pm2 list
 ```
-> **Porta 3013 compartilhada com a aula 20:** o `api-proxy-node` da aula 20 usa a mesma 3013. Os dois não podem ficar rodando ao mesmo tempo. Antes de subir o `api-cicd`, pare o da aula 20 com `pm2 delete api-proxy-node` (confira com `pm2 list`). Se esquecer, o `api-cicd` fica `errored` com `EADDRINUSE`. Do outro lado, com a aula 21 na 3013 e o Nginx da aula 20 ainda no ar, o `./testar_nginx.sh` da aula 20 passa a dar `404`, porque a API da aula 21 não tem a rota `/api/v1/proxy/info`.
+> **Porta 3090, separada da 3013 da aula 20:** o `api-cicd` da aula 21 roda na 3090, diferente da 3013 usada pelo `api-proxy-node` da aula 20 — os dois podem ficar no PM2 ao mesmo tempo sem conflito. Confira com `pm2 list` se os nomes e portas batem com o esperado antes de rodar os exercícios.
 
-> ⚠️ **importante — o PM2 tem que estar instalado globalmente (`npm install -g pm2`, feito lá na aula 19), não local dentro da pasta `aula21`.** Testei o cenário de instalar local por engano (`npm install pm2` sem `-g`, direto na pasta do projeto) e o `deploy.sh` quebrava: o passo `[2/4]` do próprio script (`npm install --production`) apaga o `pm2` da pasta `node_modules`, porque ele não está listado no `package.json` (o npm remove qualquer pacote "extra" que não conste nas dependências). Depois disso, todo `pm2 restart` dentro do script passa a dar `pm2: command not found`. Com o PM2 instalado globalmente (como já deve estar desde a aula 19), esse problema não existe, porque `npm install --production` só mexe no `node_modules` local do projeto, nunca nos pacotes globais.
+> ⚠️ **importante — o PM2 tem que estar instalado globalmente (`npm install -g pm2`, feito lá na aula 19), não local dentro da pasta `aula21`.** No cenário de instalar local por engano (`npm install pm2` sem `-g`, direto na pasta do projeto), o `deploy.sh` quebra: o passo `[2/4]` do próprio script (`npm install --production`) apaga o `pm2` da pasta `node_modules`, porque ele não está listado no `package.json` (o npm remove qualquer pacote "extra" que não conste nas dependências). Depois disso, todo `pm2 restart` dentro do script passa a dar `pm2: command not found`. Com o PM2 instalado globalmente (como já deve estar desde a aula 19), esse problema não existe, porque `npm install --production` só mexe no `node_modules` local do projeto, nunca nos pacotes globais.
 
 `deploy.sh` — o pipeline em si: puxa código novo, instala dependências, reinicia no PM2 e faz um *smoke test*; se o teste falhar, mostra os logs e sai com erro (código 1), sem marcar sucesso:
 ```bash
@@ -2391,7 +2396,7 @@ echo "=================================================="
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"   # raiz do repositório, não importa onde ele está
 APP_NAME="api-cicd"
-PORT=3013
+PORT=3090
 
 echo "[1/4] Atualizando código-fonte do repositório remoto..."
 cd $REPO_DIR
@@ -2422,7 +2427,7 @@ echo "=================================================="
 chmod +x deploy.sh
 ./deploy.sh
 ```
-> ⚠️ **caminho do repositório:** o roteiro do professor usa `REPO_DIR="$HOME/binario_tech"`, que só vale se o repositório estiver exatamente em `~/binario_tech` (é o caso do servidor da escola). No Cloud Shell ele fica em `~/curso-pbe1/binario_tech`, e aí o `cd` falha com `No such file or directory` (`cd: /home/.../binario_tech: No such file or directory`). O script ainda pode "dar certo" se você rodar de dentro da `aula21`, porque o `git pull` e o `npm install` acabam rodando na pasta atual, mas ele fica errado (e o `deploy_history.log` do exercício 2 iria para o lugar errado). Por isso a linha do `REPO_DIR` acima calcula a raiz a partir do local do próprio script (`aula21/..`), e funciona nos dois ambientes e também quando o script é chamado pelo hook. Testei essa linha rodando o script de dentro da `aula21`, da raiz do repo e de outra pasta, e o `REPO_DIR` deu o mesmo caminho nos quatro casos.
+> ⚠️ **caminho do repositório:** o roteiro do professor usa `REPO_DIR="$HOME/binario_tech"`, que só vale se o repositório estiver exatamente em `~/binario_tech` (é o caso do servidor da escola). No Cloud Shell ele fica em `~/curso-pbe1/binario_tech`, e aí o `cd` falha com `No such file or directory` (`cd: /home/.../binario_tech: No such file or directory`). O script ainda pode "dar certo" se você rodar de dentro da `aula21`, porque o `git pull` e o `npm install` acabam rodando na pasta atual, mas ele fica errado (e o `deploy_history.log` do exercício 2 iria para o lugar errado). Por isso a linha do `REPO_DIR` acima calcula a raiz a partir do local do próprio script (`aula21/..`), e funciona nos dois ambientes e também quando o script é chamado pelo hook. Essa linha funciona rodando o script de dentro da `aula21`, da raiz do repo ou de outra pasta — o `REPO_DIR` dá o mesmo caminho em todos os casos.
 
 
 **Exercício 1 — mudar a versão, commitar e rodar o deploy**
@@ -2432,12 +2437,12 @@ git add aula21/server.js
 git commit -m "chore: bump versao para 1.0.1"
 cd aula21
 ./deploy.sh
-curl -s http://localhost:3013/api/v1/versao | jq '.versao'
+curl -s http://localhost:3090/api/v1/versao | jq '.versao'
 ```
 Resultado esperado: `"1.0.1"`.
 > Repare que quem realmente aplica a mudança é o `pm2 restart` dentro do `deploy.sh` (ele recarrega o `server.js` com o código novo que já está salvo em disco) — o `git commit` aqui serve só pra manter o histórico do projeto, não é ele que "aplica" a versão nova.
 
-✅ **testei esse fluxo inteiro de ponta a ponta** (editar, commitar, rodar `deploy.sh`, checar via curl) e o `/api/v1/versao` passou a responder `"1.0.1"` depois do deploy.
+✅ **confirmado de ponta a ponta** (editar, commitar, rodar `deploy.sh`, checar via curl): o `/api/v1/versao` passa a responder `"1.0.1"` depois do deploy.
 
 **Exercício 2 — gravar `deploy_history.log` a cada deploy**
 
@@ -2472,7 +2477,7 @@ Teste (não afeta o exercício 1, só acrescenta uma linha nova no log a cada de
 ./deploy.sh
 cat deploy_history.log
 ```
-✅ **testei** — cada deploy bem-sucedido gravou uma linha assim: `2026-09-26 21:41:49 - Deploy com sucesso - Commit: a3a17fe`.
+✅ **confirmado** — cada deploy bem-sucedido grava uma linha assim: `2026-09-26 21:41:49 - Deploy com sucesso - Commit: a3a17fe`.
 
 **Exercício 3 — Git Hook `post-commit` disparando o deploy sozinho**
 ```bash
@@ -2490,9 +2495,9 @@ fi
 ```bash
 chmod +x .git/hooks/post-commit
 ```
-> ⚠️ **testei isso de verdade e achei um risco real: rodar o `deploy.sh` de forma síncrona dentro do hook (sem o `nohup ... &` acima) trava o `git commit` até o deploy inteiro terminar.** Na maior parte das vezes o deploy é rápido (poucos segundos), mas numa das minhas execuções o `pm2 restart` demorou muito mais que o normal e prendeu o terminal por vários minutos, esperando o commit "terminar". Por isso troquei a última linha do hook para rodar o `deploy.sh` **em segundo plano** (`nohup ... > deploy_hook.log 2>&1 &`) — assim o `git commit` retorna na hora (testei e confirmei: 0 segundos), não importa quanto tempo o deploy leve por trás. O resultado do deploy fica registrado em `aula21/deploy_hook.log` pra você conferir depois.
+> ⚠️ **risco real: rodar o `deploy.sh` de forma síncrona dentro do hook (sem o `nohup ... &` abaixo) trava o `git commit` até o deploy inteiro terminar.** Na maior parte das vezes o deploy é rápido (poucos segundos), mas o `pm2 restart` pode demorar bem mais que o normal em algumas execuções e prender o terminal por vários minutos, esperando o commit "terminar". Por isso a última linha do hook roda o `deploy.sh` **em segundo plano** (`nohup ... > deploy_hook.log 2>&1 &`) — assim o `git commit` retorna na hora (confirmado: 0 segundos), não importa quanto tempo o deploy leve por trás. O resultado do deploy fica registrado em `aula21/deploy_hook.log` para conferir depois.
 
-> **Atenção — isso só dispara em commits feitos DIRETO no servidor da sala.** Um hook `post-commit` roda no momento do comando `git commit`, no repositório onde ele está instalado. Testei os dois cenários pra confirmar: se você editar um arquivo no Google Cloud Shell, commitar lá e depois só der `git pull` no servidor da sala (o fluxo que a gente usa desde a aula 16) — mesmo um `git pull` que traz o commit novo — o hook **não dispara**, confirmei isso na prática. Só dispara com um `git commit` de verdade rodado ali, dentro do servidor da sala:
+> **Atenção — isso só dispara em commits feitos DIRETO no servidor da sala.** Um hook `post-commit` roda no momento do comando `git commit`, no repositório onde ele está instalado. Confirmado nos dois cenários: se um arquivo for editado no Google Cloud Shell, commitado lá e depois só vier um `git pull` no servidor da sala (o fluxo usado desde a aula 16) — mesmo um `git pull` que traz o commit novo — o hook **não dispara**. Só dispara com um `git commit` de verdade rodado ali, dentro do servidor da sala:
 ```bash
 # ainda no servidor da sala, dentro de ~/binario_tech
 echo "teste do hook" >> aula21/README_teste.txt
@@ -2508,6 +2513,219 @@ git add aula21/server.js aula21/deploy.sh aula21/package.json
 git commit -m "feat: pipeline de deploy automatizado com pm2 - aula21"
 git push origin main
 ```
+
+---
+
+### Aula 22 — Conteinerização com Docker
+
+Passo a passo pra montar do zero, com a resolução de cada exercício. Ainda sem "✅ já no código" porque é a primeira vez rodando essa aula.
+
+**Preparação (no servidor Linux da sala, via SSH):**
+
+```bash
+ssh usuario_aluno@192.168.X.X
+cd ~/binario_tech
+git pull origin main
+mkdir -p aula22/src && cd aula22
+```
+
+Conferir se o Docker está instalado e se o usuário tem permissão de usar sem `sudo` em todo comando:
+```bash
+docker --version
+docker ps
+```
+Se o `docker ps` pedir permissão (`permission denied`), use `sudo docker ...` em todos os comandos abaixo, ou peça pra adicionar o usuário ao grupo `docker` (`sudo usermod -aG docker $USER`, depois é preciso sair e entrar de novo na sessão SSH pra valer).
+
+`package.json`:
+```json
+{
+  "name": "aula22-docker-node",
+  "version": "1.0.0",
+  "description": "Conteinerização de Microserviço com Docker - Binário Tech",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
+```
+
+`server.js`:
+```js
+require('dotenv').config();
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+app.use(express.json());
+
+app.get('/api/v1/container/info', (req, res) => {
+  res.json({
+    status: "OPERACIONAL",
+    ambiente: process.env.NODE_ENV || "desenvolvimento",
+    modulo: "Binário Tech - Conteinerização Docker",
+    hostname: require('os').hostname(),
+    portaInterna: PORT,
+    timestamp: new Date()
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`[Binário Tech] Microserviço rodando no container na porta ${PORT}`);
+});
+```
+
+`.dockerignore` — o que não entra na imagem (evita levar `node_modules` do host, que pode ter binários de outro sistema operacional, e evita vazar segredos do `.env`):
+```
+node_modules
+npm-debug.log
+.git
+.env
+```
+
+`Dockerfile`:
+```dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 4000
+
+CMD ["npm", "start"]
+```
+
+> O `npm ci` exige um `package-lock.json` já existente no contexto do build (ele é mais rígido que o `npm install` — instala exatamente o que está no lock file, sem recalcular nada). Se ainda não existir um `package-lock.json` na pasta `aula22`, gere um antes do `docker build`:
+> ```bash
+> npm install
+> ```
+> Isso cria o `package-lock.json` e também o `node_modules` local (que o `.dockerignore` impede de entrar na imagem — a imagem instala o dela por conta própria, dentro do container, com `npm ci`).
+
+> `npm ci --only=production` funciona, mas o npm mais recente marca essa flag como obsoleta e sugere `npm ci --omit=dev` no lugar — o resultado final é o mesmo (só as dependências de produção, sem `devDependencies`).
+
+**Build da imagem:**
+```bash
+docker build -t binario-tech/api-docker:1.0 .
+```
+
+**Executar o container, mapeando a porta 8082 do host para a 4000 do container:**
+```bash
+docker run -d \
+  --name container-telemetria \
+  -p 8082:4000 \
+  -e NODE_ENV=production \
+  binario-tech/api-docker:1.0
+```
+
+**Verificar e testar:**
+```bash
+docker ps
+curl -s http://localhost:8082/api/v1/container/info | jq .
+```
+
+**Logs e acesso ao shell interno do container:**
+```bash
+docker logs -f container-telemetria
+```
+(`Ctrl+C` sai do modo de acompanhamento sem derrubar o container)
+```bash
+docker exec -it container-telemetria sh
+```
+> Dentro do container, use `sh`, não `bash` — a imagem `node:20-alpine` não vem com `bash` instalado, só com o `sh` padrão do Alpine. Rodar `ps aux` ali dentro mostra os processos vistos de dentro do container (bem menos coisa que no host, porque o container é isolado). `exit` sai do shell sem derrubar o container (ele continua rodando em segundo plano).
+
+`validar_docker.sh`:
+```bash
+#!/bin/bash
+echo "=================================================="
+echo "    AUDITORIA DE CONTAINER DOCKER - BINÁRIO TECH"
+echo "=================================================="
+
+CONTAINER_NAME="container-telemetria"
+IS_RUNNING=$(docker inspect -f '{{.State.Running}}' $CONTAINER_NAME 2>/dev/null)
+
+if [ "$IS_RUNNING" == "true" ]; then
+  echo -e "[OK] Container '$CONTAINER_NAME' está ativo e em execução!"
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/api/v1/container/info)
+  echo "Status da resposta HTTP (Porta 8082): $HTTP_CODE"
+else
+  echo -e "[ERRO] Container '$CONTAINER_NAME' não está rodando."
+fi
+echo "=================================================="
+```
+```bash
+chmod +x validar_docker.sh
+./validar_docker.sh
+```
+
+**Exercício 1 — nova tag `latest` pra mesma imagem**
+```bash
+docker tag binario-tech/api-docker:1.0 binario-tech/api-docker:latest
+docker images | grep api-docker
+```
+`docker tag` não duplica a imagem no disco — as duas tags (`1.0` e `latest`) apontam pro mesmo ID de imagem. Confirma com `docker images`: as duas linhas têm o mesmo `IMAGE ID`.
+
+**Exercício 2 — segundo container, em homologação, na porta 8083**
+```bash
+docker run -d \
+  --name container-telemetria-hml \
+  -p 8083:4000 \
+  -e NODE_ENV=homologacao \
+  binario-tech/api-docker:1.0
+docker ps
+curl -s http://localhost:8083/api/v1/container/info | jq .
+```
+Resultado esperado: `"ambiente": "homologacao"` na resposta da porta 8083, enquanto a porta 8082 (primeiro container) continua respondendo `"ambiente": "production"`. Os dois containers usam a mesma imagem, mas são processos independentes, cada um com sua própria porta mapeada.
+
+**Exercício 3 — `limpar_ambiente_docker.sh`**
+```bash
+nano limpar_ambiente_docker.sh
+```
+```bash
+#!/bin/bash
+echo "=================================================="
+echo "    LIMPEZA DE AMBIENTE DOCKER - BINÁRIO TECH"
+echo "=================================================="
+
+echo "[1/2] Removendo containers parados..."
+PARADOS=$(docker ps -a --filter "status=exited" -q)
+if [ -n "$PARADOS" ]; then
+  docker rm $PARADOS
+else
+  echo "Nenhum container parado encontrado."
+fi
+
+echo "[2/2] Removendo imagens dangling (sem tag, <none>)..."
+DANGLING=$(docker images --filter "dangling=true" -q)
+if [ -n "$DANGLING" ]; then
+  docker rmi $DANGLING
+else
+  echo "Nenhuma imagem dangling encontrada."
+fi
+echo "=================================================="
+```
+```bash
+chmod +x limpar_ambiente_docker.sh
+docker stop container-telemetria-hml && docker rm container-telemetria-hml
+./limpar_ambiente_docker.sh
+```
+O teste acima para e remove o `container-telemetria-hml` de propósito, antes de rodar o script, só pra ter um container parado de verdade pra limpar. O `container-telemetria` (o principal) fica de fora — o filtro `status=exited` só pega containers que já pararam, não mexe no que está `running`.
+
+**Exercício 4 — versionar a aula 22**
+
+O `Dockerfile`, `.dockerignore`, `server.js`, `package.json` e `validar_docker.sh` ficam dentro da pasta `aula22`, então entram no repositório normalmente (diferente do `.conf` do Nginx da aula 20, que mora em `/etc/nginx` e fica de fora):
+```bash
+cd ~/binario_tech
+git add aula22
+git commit -m "feat: conteinerizacao com docker - aula22"
+git push origin main
+```
+O `node_modules` da aula 22 não deve entrar no commit — o `.gitignore` da raiz do projeto já ignora `node_modules/` em qualquer pasta.
 
 ---
 

@@ -1,4 +1,4 @@
-=== INICIANDO TESTES CRUD - Fri Sep 25 07:02:47 PM UTC 2026 ===
+=== INICIANDO TESTES CRUD - Fri Oct  2 06:53:44 PM UTC 2026 ===
 
 1. Cadastrando Veículo 1 (DAF)...
 {
@@ -23,9 +23,9 @@
   "mensagem": "Status atualizado com sucesso!",
   "veiculo": {
     "id": 3,
-    "placa": "ABC-9999",
-    "montadora": "DAF",
-    "modelo": "XF",
+    "placa": "KLL-9090",
+    "montadora": "Volvo",
+    "modelo": "FH 540",
     "status": "EM_ROTA"
   }
 }
