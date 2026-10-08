@@ -4,12 +4,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node telemetria.js"
+    "start": "node telemetria.js &"
   },
   "keywords": [],
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "httpie": "^1.1.2"
   },
   "author": "",
   "license": "ISC",

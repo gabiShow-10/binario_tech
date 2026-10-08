@@ -20,7 +20,7 @@ app.get('/api/v1/vw', (req, res) => {
 });
 
 app.get('/api/v1/volvo', (req, res) =>{
-    res.json({ montadora: "Volvo", modelo: "FH 540", status: "OK", conexao: true, velocidade_media: 80});
+    res.json({ montadora: "Volvo", modelo: "FH 540", status: "ALERTA", conexao: false, velocidade_media: 0});
 });
 
 app.listen(PORT, () => {
