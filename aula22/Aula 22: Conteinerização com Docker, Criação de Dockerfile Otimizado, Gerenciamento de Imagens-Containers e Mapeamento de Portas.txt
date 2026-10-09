@@ -1,0 +1,102 @@
+EXERCÍCIO 1: 
+
+Crie uma nova tag da imagem Docker chamada `binario-tech/api-docker:latest` utilizando o comando `docker tag`. 
+gabriel.barbosa@genesis:~/binario_tech/aula22$ docker tag binario-tech/api-docker:1.0 binario-tech/api-docker:latest
+gabriel.barbosa@genesis:~/binario_tech/aula22$ docker images
+REPOSITORY                TAG        IMAGE ID       CREATED          SIZE
+aula23-web-api            latest     6636356c88a9   2 minutes ago    140MB
+<none>                    <none>     df52b487f7ce   3 minutes ago    144MB
+binario-tech/api-docker   1.0        22ad35b8d87a   8 minutes ago    139MB
+binario-tech/api-docker   latest     22ad35b8d87a   8 minutes ago    139MB
+<none>                    <none>     8cb66d97a193   8 minutes ago    140MB
+<none>                    <none>     c9cc5e012c83   12 minutes ago   140MB
+<none>                    <none>     30614359b80e   17 minutes ago   140MB
+<none>                    <none>     7d7cf46936ce   24 minutes ago   140MB
+<none>                    <none>     597b235c229a   26 minutes ago   140MB
+<none>                    <none>     db68b303414c   27 minutes ago   140MB
+<none>                    <none>     fe3a74e22e9c   27 minutes ago   140MB
+<none>                    <none>     ef74437bcc89   29 minutes ago   140MB
+<none>                    <none>     40622de96314   6 days ago       139MB
+<none>                    <none>     17a1c59b108c   6 days ago       141MB
+<none>                    <none>     3b4bed0c38c1   7 days ago       139MB
+api-docker                latest     4352c445fc58   7 days ago       127MB
+redis                     7-alpine   f84b0c467801   2 weeks ago      39.1MB
+
+
+EXERCÍCIO 2: 
+
+Execute um segundo container em background chamado `container-telemetria-hml` mapeando a porta host `8083` para a porta container `4000`, passando a variável `NODE_ENV=homologacao`. 
+$ docker run -d \
+  --name container-telemetria-hml \
+  -p 8083:4013 \
+  -e NODE_ENV=homologacao \
+  binario-tech/api-docker:latest
+373949c2ce5d39ef865140d2c7973c79161199da0e89770609010923ef53c2a9
+gabriel.barbosa@genesis:~/binario_tech/aula22$ curl -s http://localhost:8083/api/v1/container/info | jq .
+{
+  "status": "OPERACIONAL",
+  "ambiente": "homologacao",
+  "modulo": "Binário Tech - Conteinerização Docker",
+  "hostname": "373949c2ce5d",
+  "portaInterna": 4013,
+  "timestamp": "2026-10-08T19:17:28.734Z"
+}
+
+
+EXERCÍCIO 3: 
+
+Escreva um script Bash `limpar_ambiente_docker.sh` que pare e remova os containers inativos e imagens pendentes (dangling images) usando filtros do Docker CLI. 
+$ ./limpar_ambiente_docker.sh
+==================================================
+    LIMPEZA DE AMBIENTE DOCKER - BINÁRIO TECH
+==================================================
+[1/2] Removendo containers inativos (exited/created)...
+Error response from daemon: invalid filter 'status'
+[2/2] Removendo imagens pendentes (dangling images <none>)...
+Deleted Images:
+deleted: sha256:db68b303414cad8761c2d5b95337b4fb13913052bc38116f449c34acb5d2ae9f
+deleted: sha256:17a1c59b108c12ef2bfa160ff671ff527c36c548c9405dfe16ae284d44e7968d
+deleted: sha256:b2e64566fe948702977c800a9d533203d1e751d3598cf94efd86efc2597c9e3a
+deleted: sha256:df52b487f7ce3799a39cfded17e20a02acae689af95356ea392d377f96baddbc
+deleted: sha256:6636356c88a9d4f130307140646f56463ffb62812e0f3834b609d44bf2d2e908
+deleted: sha256:30614359b80e7360d616e1efecb591c0b3142ac7106d23ec7832030f58d355ef
+deleted: sha256:7d7cf46936ceec687e1c5255df26bbc429bd970f3151d3d069371e91b362d67a
+deleted: sha256:fe3a74e22e9c2d0db40e2e71f572828ed2e92079a1f324ee7d3bb93532c67d42
+deleted: sha256:f0c3035f1509fc5f6da067210a6da17181b8abde0f9ad6d8bef93814fdd3bbbe
+deleted: sha256:8cb66d97a1933141f70c6a97a21d04b9aabc93a3589e80a818eac29a9d2a8a67
+deleted: sha256:c9cc5e012c8386b0f167aa3608867aebfb32dbb1444133b8039a52656e33d6ee
+deleted: sha256:ef74437bcc8905e22c3306cf731c5cc14ec0099f497d22a3b1ea5417a74f4f88
+deleted: sha256:40622de96314fb39ed9de2b3eb3af5f3c6e9ac0df5602aab6d2a1cd785d2d38e
+deleted: sha256:597b235c229a5c18885bbc0911a7c3a90d05086df8ba93ede13c6387e6625b8f
+
+Total reclaimed space: 0B
+==================================================
+Limpeza concluída com sucesso!
+==================================================
+
+	
+EXERCÍCIO 4: 
+
+Versione e envie todas as alterações da `aula22` para a branch `main` do GitHub utilizando os comandos `git add`, `git commit` e `git push origin main`.
+ git add .
+gabriel.barbosa@genesis:~/binario_tech/aula22$ git commit -m "feat: Aula22 - conteinerização da api, scripts de validacao-limpeza e exercicios concluidos"
+[main 184409a] feat: Aula22 - conteinerização da api, scripts de validacao-limpeza e exercicios concluidos
+ 8 files changed, 859 insertions(+)
+ create mode 100644 "aula22/.Aula 22: Conteineriza\303\247\303\243o com Docker, Cria\303\247\303\243o de Dockerfile Otimizado, Gerenciamento de Imagens-Containers e Mapeamento de Portas.swp"
+ create mode 100644 aula22/.dockerignore
+ create mode 100644 aula22/Dockerfile
+ create mode 100755 aula22/limpar_ambiente_docker.sh
+ create mode 100644 aula22/package-lock.json
+ create mode 100644 aula22/package.json
+ create mode 100644 aula22/server.js
+ create mode 100755 aula22/validar_docker.sh
+gabriel.barbosa@genesis:~/binario_tech/aula22$ git push origin main
+Enumerating objects: 12, done.
+Counting objects: 100% (12/12), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (10/10), done.
+Writing objects: 100% (11/11), 11.90 KiB | 11.90 MiB/s, done.
+Total 11 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 1 local object.
+To https://github.com/gabiShow-10/binario_tech.git
+   2e7376d..184409a  main -> main

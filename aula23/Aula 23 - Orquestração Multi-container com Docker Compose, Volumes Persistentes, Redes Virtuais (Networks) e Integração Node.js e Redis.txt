@@ -1,0 +1,66 @@
+4. BATERIA DE EXERCÍCIOS DE FIXAÇÃO 
+
+EXERCÍCIO 1: 
+
+Adicione uma nova rota `DELETE /api/v1/visitas/reset` em `server.js` que limpe a chave `contador_visitas` no Redis e retorne confirmação em JSON. 
+$ curl -X DELETE http://localhost:5013/api/v1/visitas/reset | jq .
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   114  100   114    0     0  15708      0 --:--:-- --:--:-- --:--:-- 16285
+{
+  "status": "SUCESSO",
+  "mensagem": "Contador de visitas resetado com sucesso!",
+  "timestamp": "2026-10-09T11:38:35.360Z"
+}
+
+EXERCÍCIO 2: 
+
+Inspecione o volume criado usando o comando `docker volume inspect aula23_redis_data` e identifique o caminho de montagem no sistema de arquivos do Linux host. 
+$ docker volume inspect aula23_redis_data
+[
+    {
+        "CreatedAt": "2026-10-09T08:35:09-03:00",
+        "Driver": "local",
+        "Labels": {
+            "com.docker.compose.project": "aula23",
+            "com.docker.compose.version": "2.26.1",
+            "com.docker.compose.volume": "redis_data"
+        },
+----- > "Mountpoint": "/var/lib/docker/volumes/aula23_redis_data/_data",
+        "Name": "aula23_redis_data",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+
+
+EXERCÍCIO 3: 
+
+Crie um script Bash `logs_unificados.sh` que utilize o comando `docker compose logs -f --tail=20` para monitorar os logs combinados da API e do Redis em tempo real. 
+gabriel.barbosa@genesis:~/binario_tech/aula23$ ./logs_unificados.sh
+==================================================
+    MONITORAMENTO DE LOGS UNIFICADOS - REDIS + API
+==================================================
+binario_app_web_gabriel      |
+binario_app_web_gabriel      | > aula23-docker-compose@1.0.0 start
+binario_app_web_gabriel      | > node server.js
+binario_app_web_gabriel      |
+binario_redis_cache_gabriel  | 1:C 09 Oct 2026 11:43:48.416 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+binario_redis_cache_gabriel  | 1:C 09 Oct 2026 11:43:48.416 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+binario_redis_cache_gabriel  | 1:C 09 Oct 2026 11:43:48.416 * Redis version=7.4.11, bits=64, commit=00000000, modified=0, pid=1, just started
+binario_redis_cache_gabriel  | 1:C 09 Oct 2026 11:43:48.416 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+binario_redis_cache_gabriel  | 1:M 09 Oct 2026 11:43:48.416 * monotonic clock: POSIX clock_gettime
+binario_redis_cache_gabriel  | 1:M 09 Oct 2026 11:43:48.417 * Running mode=standalone, port=6379.
+binario_redis_cache_gabriel  | 1:M 09 Oct 2026 11:43:48.417 * Server initialized
+binario_redis_cache_gabriel  | 1:M 09 Oct 2026 11:43:48.417 * Ready to accept connections tcp
+binario_app_web_gabriel      | [Binário Tech] API Orquestrada rodando na porta 5013
+bInario_app_web_gabriel      | [Binário Tech] Conectado ao servidor Redis com sucesso!
+
+CTRL + C
+
+$ curl -s http://localhost:5013/api/v1/visitas | jq .
+EXERCÍCIO 4: 
+
+Versione e envie todas as alterações da `aula23` para a branch `main` do GitHub utilizando os comandos `git add`, `git commit` e `git push origin main`.
+
+

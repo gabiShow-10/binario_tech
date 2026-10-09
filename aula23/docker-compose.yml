@@ -1,0 +1,28 @@
+services:
+  web-api:
+    build: .
+    container_name: binario_app_web_gabriel
+    ports:
+      - "5013:5013"
+    environment:
+      - PORT=5013
+      - REDIS_URL=redis://redis-cache:6379
+    depends_on:
+      - redis-cache
+    networks:
+      - rede-binario
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: binario_redis_cache_gabriel
+    volumes:
+      - redis_data:/data
+    networks:
+      - rede-binario
+
+networks:
+  rede-binario:
+    driver: bridge
+
+volumes:
+  redis_data:
