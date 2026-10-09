@@ -40,6 +40,7 @@ Este README tem duas partes:
   - [Aula 20 — Proxy Reverso com Nginx](#aula-20--proxy-reverso-com-nginx)
   - [Aula 21 — CI/CD Local e Automação de Deploy](#aula-21--cicd-local-e-automação-de-deploy)
   - [Aula 22 — Conteinerização com Docker](#aula-22--conteinerização-com-docker)
+  - [Aula 23 — Docker Compose, Volumes, Networks e Redis](#aula-23--docker-compose-volumes-networks-e-redis)
 - [5. Observações finais para a prova](#5-observações-finais-para-a-prova)
 
 ---
@@ -63,6 +64,8 @@ A alteração foi aplicada em:
 **Exceção 3:** a aula 20 usa a porta **3013** para a API interna do Node (por trás do Nginx, a porta do seu número de chamada) e a **8080** pra acessar via proxy reverso — de propósito, é o ponto central da aula (o Nginx escuta na 8080 e repassa pra 3013). A aula 21 usa a porta **3090**, separada da 3013 — pode ficar rodando junto com a aula 20 no PM2 sem conflito.
 
 **Exceção 4:** a aula 22 usa a porta **4000** dentro do container Docker e expõe pro host nas portas **8082** (container principal) e **8083** (segundo container, exercício 2) — valores fixos do plano de aula, sem relação com o número de chamada.
+
+**Exceção 5:** a aula 23 usa a porta **5013** tanto dentro quanto fora do container (mapeamento `5013:5013` no `docker-compose.yml`).
 
 ### 1.2 Padronização dos nomes de arquivos
 
@@ -2726,6 +2729,245 @@ git commit -m "feat: conteinerizacao com docker - aula22"
 git push origin main
 ```
 O `node_modules` da aula 22 não deve entrar no commit — o `.gitignore` da raiz do projeto já ignora `node_modules/` em qualquer pasta.
+
+---
+
+### Aula 23 — Docker Compose, Volumes, Networks e Redis
+
+A porta usada nesta aula é a **5013** (interna e externa, igual nos dois lados do mapeamento), e os nomes dos containers levam um sufixo pessoal (`_gabriel`) pra não colidir com os containers de outros alunos no mesmo servidor da sala.
+
+**Preparação (no servidor Linux da sala, via SSH):**
+
+```bash
+ssh usuario_aluno@192.168.X.X
+cd ~/binario_tech
+git pull origin main
+mkdir -p aula23/src && cd aula23
+docker compose version
+```
+Se `docker compose version` não for reconhecido, mas `docker-compose version` (com hífen) funcionar, é a versão antiga (standalone) do Compose — troca `docker compose` por `docker-compose` em todos os comandos desta aula.
+
+`package.json`:
+```json
+{
+  "name": "aula23-docker-compose",
+  "version": "1.0.0",
+  "description": "Orquestração Multi-Container com Node.js e Redis - Binário Tech",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "redis": "^4.6.13"
+  }
+}
+```
+
+`server.js`:
+```js
+require('dotenv').config();
+const express = require('express');
+const { createClient } = require('redis');
+
+const app = express();
+const PORT = process.env.PORT || 5013;
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+
+app.use(express.json());
+
+const client = createClient({ url: REDIS_URL });
+
+client.on('error', (err) => console.error('[Erro Redis]', err));
+
+async function init() {
+  await client.connect();
+  console.log('[Binário Tech] Conectado ao servidor Redis com sucesso!');
+}
+
+init();
+
+// Rota GET - Contador de visitas
+app.get('/api/v1/visitas', async (req, res) => {
+  try {
+    const visitas = await client.incr('contador_visitas');
+    res.json({
+      status: "SUCESSO",
+      mensagem: "Contador atualizado no Redis com sucesso!",
+      totalVisitas: visitas,
+      instanciaHost: require('os').hostname(),
+      timestamp: new Date()
+    });
+  } catch (error) {
+    res.status(500).json({ status: "ERRO", mensagem: error.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`[Binário Tech] API Orquestrada rodando na porta ${PORT}`);
+});
+```
+
+`.dockerignore`:
+```
+node_modules
+.git
+.env
+```
+
+`Dockerfile`:
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 5013
+CMD ["npm", "start"]
+```
+> Gerar o `package-lock.json` com `npm install` antes do primeiro `docker build`, já que o `npm ci` exige que ele já exista. `npm ci --only=production` funciona, mas é equivalente ao mais atual `npm ci --omit=dev`.
+
+`docker-compose.yml`:
+```yaml
+services:
+  web-api:
+    build: .
+    container_name: binario_app_web_gabriel
+    ports:
+      - "5013:5013"
+    environment:
+      - PORT=5013
+      - REDIS_URL=redis://redis-cache:6379
+    depends_on:
+      - redis-cache
+    networks:
+      - rede-binario
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: binario_redis_cache_gabriel
+    volumes:
+      - redis_data:/data
+    networks:
+      - rede-binario
+
+networks:
+  rede-binario:
+    driver: bridge
+
+volumes:
+  redis_data:
+```
+> Sem a chave `version: '3.8'` no topo do arquivo — o plano do professor inclui essa linha, mas versões recentes do Docker Compose consideram essa chave obsoleta e mostram um aviso de depreciação se ela estiver presente. Tirar a linha evita o aviso, sem mudar nada no comportamento.
+>
+> O serviço `redis-cache` também não publica a porta `6379` pro host (o plano original tinha `ports: ["6379:6379"]` nesse serviço). Isso é proposital: a API já alcança o Redis pela rede interna do Compose (`redis-cache:6379`), e não expor a porta do Redis pro host é mais seguro — só importa se for necessário conectar no Redis direto do host com um `redis-cli` local, o que esta aula não pede.
+
+**Build e subida dos serviços:**
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+**Testar a rota:**
+```bash
+curl -s http://localhost:5013/api/v1/visitas | jq .
+```
+
+**Testar a persistência do volume:**
+```bash
+docker compose restart
+curl -s http://localhost:5013/api/v1/visitas | jq .
+```
+O `totalVisitas` deve continuar contando de onde parou, não voltar pra 1 — é o volume `redis_data` mantendo os dados do Redis entre reinícios do container.
+
+`status_compose.sh`:
+```bash
+nano status_compose.sh
+```
+```bash
+#!/bin/bash
+echo ""
+echo "   DIAGNÓSTICO DOCKER COMPOSE - BINÁRIO TECH"
+echo ""
+
+docker compose ps
+
+echo -e "\n--- Teste de Conectividade do Serviço Web ---"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5013/api/v1/visitas)
+
+if [ "$HTTP_CODE" -eq 200 ]; then
+  echo -e "[OK] Aplicação Web e Redis respondendo corretamente (HTTP 200)."
+else
+  echo -e "[ERRO] Falha ao comunicar com a pilha multi-container (HTTP Status: $HTTP_CODE)."
+fi
+echo "=================================================="
+```
+```bash
+chmod +x status_compose.sh
+./status_compose.sh
+```
+
+**Exercício 1 — rota `DELETE /api/v1/visitas/reset`**
+
+Dentro de `server.js`, depois da rota `GET /api/v1/visitas`:
+```js
+// ------- CÓDIGO ANTIGO (já existe) -------
+app.get('/api/v1/visitas', async (req, res) => {
+  // ... lógica do incr já existente ...
+});
+
+// ------- CÓDIGO NOVO (adicionar aqui) -------
+app.delete('/api/v1/visitas/reset', async (req, res) => {
+  try {
+    await client.del('contador_visitas');
+    res.json({
+      status: "SUCESSO",
+      mensagem: "Contador de visitas resetado com sucesso!",
+      timestamp: new Date()
+    });
+  } catch (error) {
+    res.status(500).json({ status: "ERRO", mensagem: error.message });
+  }
+});
+```
+✅ **já no código.**
+```bash
+curl -X DELETE http://localhost:5013/api/v1/visitas/reset | jq .
+curl -s http://localhost:5013/api/v1/visitas | jq .
+```
+O segundo `curl` deve mostrar `totalVisitas: 1` de novo, confirmando que o `del` zerou a chave no Redis (o próximo `incr` começa do 1).
+
+**Exercício 2 — inspecionar o volume**
+```bash
+docker volume inspect aula23_redis_data
+```
+O prefixo `aula23_` vem do nome da pasta onde está o `docker-compose.yml` (o Compose usa o nome do diretório como nome do projeto, por padrão). O campo a procurar na saída é o `"Mountpoint"`, algo como `/var/lib/docker/volumes/aula23_redis_data/_data` — esse é o caminho real no sistema de arquivos do host onde o Redis grava os dados do volume.
+
+**Exercício 3 — `logs_unificados.sh`**
+```bash
+nano logs_unificados.sh
+```
+```bash
+#!/bin/bash
+echo "=================================================="
+echo "    MONITORAMENTO DE LOGS UNIFICADOS - REDIS + API"
+echo "=================================================="
+docker compose logs -f --tail=20
+```
+✅ **já no código.**
+```bash
+chmod +x logs_unificados.sh
+./logs_unificados.sh
+```
+`Ctrl+C` sai do acompanhamento sem derrubar os containers — o `-f` só segue os logs em tempo real, como um `tail -f`.
+
+**Exercício 4 — versionar a aula 23**
+```bash
+cd ~/binario_tech
+git add aula23
+git commit -m "feat: orquestracao com docker compose e redis - aula23"
+git push origin main
+```
+Antes do `git add`, vale conferir `git status` — arquivos de edição soltos (tipo `.algumacoisa.swp`, do vim, se um `nano`/`vim` for fechado sem salvar direito) não deveriam entrar no commit. Se o `.gitignore` da raiz ainda não tiver uma regra pra isso, adicionar `*.swp` nele resolve.
 
 ---
 

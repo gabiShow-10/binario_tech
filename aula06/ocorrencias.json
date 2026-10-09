@@ -1,0 +1,18 @@
+[
+  {
+    "data_registro": "2026-08-13T17:57:56.978Z",
+    "descricao": "Troca de pastilhas de freio",
+    "gravidade": "BAIXA",
+    "id": 1786643876978,
+    "montadora": "Mercedes-Benz",
+    "placa": "MBB-1122"
+  },
+  {
+    "data_registro": "2026-10-09T18:45:00.000Z",
+    "descricao": "Manutenção preventiva no motor",
+    "gravidade": "MEDIA",
+    "id": 1786643876979,
+    "montadora": "Scania",
+    "placa": "SCA-9988"
+  }
+]
