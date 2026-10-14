@@ -7,7 +7,7 @@ Este README tem duas partes:
 1. **Alterações realizadas no projeto** (a base que já existia).
 2. **Guia de estudo — passo a passo de cada aula**, com a resolução de todos os exercícios propostos pelo professor, pensado para revisão rápida antes da prova surpresa (o professor pode pedir para refazer qualquer aula, então cada seção aqui é auto-suficiente: o que foi pedido, como resolver, e o resultado esperado).
 
-> Sempre que o exercício já estava resolvido no seu código, isso está marcado com **✅ já no código**, com uma nota curta sobre onde e como foi feito — sem repetir o exercício inteiro.
+> Sempre que o exercício já estava resolvido no código, isso está marcado com **✅ já no código**, com uma nota curta sobre onde e como foi feito — sem repetir o exercício inteiro.
 > Sempre que há uma diferença entre o que está no ZIP e o que o exercício pede (rota que não bate, campo que não existe na tabela, etc.), isso está marcado com **⚠️ atenção** e vem com a correção pronta para copiar.
 
 ---

@@ -1,4 +1,11 @@
 #!/bin/bash
+
+echo "======================================"
+echo " Teste de PATCH e DELETE iniciando..."
+echo "======================================"
+
+sleep 1
+
 LOG_FILE="crud_result.log"
 
 echo "=== INICIANDO TESTES CRUD - $(date) ===" > $LOG_FILE
@@ -16,3 +23,14 @@ echo -e "\n4. Deletando Veículo ID 4..." >> $LOG_FILE
 curl -s -X DELETE http://localhost:3013/api/v1/veiculos/4 | jq . >> $LOG_FILE
 
 echo -e "\n=== TESTES FINALIZADOS DE FORMA SEQUENCIAL ===" >> $LOG_FILE
+
+echo "."
+sleep 1
+echo "."
+sleep 1
+echo "."
+sleep 1
+
+echo "====================================================="
+echo " TESTES FINALIZADOS - RESULTADO EM ´crud_result.log´"
+echo "====================================================="

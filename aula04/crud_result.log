@@ -1,8 +1,8 @@
-=== INICIANDO TESTES CRUD - Fri Oct  2 06:53:44 PM UTC 2026 ===
+=== INICIANDO TESTES CRUD - Wed Oct 14 07:00:13 PM UTC 2026 ===
 
 1. Cadastrando Veículo 1 (DAF)...
 {
-  "id": 4,
+  "id": 6,
   "placa": "ABC-9999",
   "montadora": "DAF",
   "modelo": "XF",
@@ -11,7 +11,7 @@
 
 2. Cadastrando Veículo 2 (Iveco)...
 {
-  "id": 5,
+  "id": 7,
   "placa": "XYZ-8888",
   "montadora": "Iveco",
   "modelo": "Hi-Way",
@@ -32,7 +32,7 @@
 
 4. Deletando Veículo ID 4...
 {
-  "mensagem": "Veiculo ID 4 removido com sucesso."
+  "erro": "Veiculo nao encontrado."
 }
 
 === TESTES FINALIZADOS DE FORMA SEQUENCIAL ===
