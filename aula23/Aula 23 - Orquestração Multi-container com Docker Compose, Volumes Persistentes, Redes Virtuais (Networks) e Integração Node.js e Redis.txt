@@ -62,5 +62,14 @@ $ curl -s http://localhost:5013/api/v1/visitas | jq .
 EXERCÍCIO 4: 
 
 Versione e envie todas as alterações da `aula23` para a branch `main` do GitHub utilizando os comandos `git add`, `git commit` e `git push origin main`.
-
+$ git push origin main
+Enumerating objects: 18, done.
+Counting objects: 100% (18/18), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (13/13), done.
+Writing objects: 100% (15/15), 16.71 KiB | 16.71 MiB/s, done.
+Total 15 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (3/3), completed with 2 local objects.
+To https://github.com/gabiShow-10/binario_tech.git
+   184409a..b0b4919  main -> main
 
