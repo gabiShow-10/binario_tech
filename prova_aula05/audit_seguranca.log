@@ -1,0 +1,95 @@
+====================================
+ AUDITORIA DE SEGURANCA - BINARIO TECH
+====================================
+
+1. ACESSO SEM CHAVE (esperado: 401)
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 73
+ETag: W/"49-VocKX6oX/pI0y+4oQzHnxXXilzU"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"erro":"Acesso nao autorizado. Header 'X-API-KEY' invalido ou ausente."}
+2. ACESSO COM CHAVE INVALIDA (esperado: 401)
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 73
+ETag: W/"49-VocKX6oX/pI0y+4oQzHnxXXilzU"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"erro":"Acesso nao autorizado. Header 'X-API-KEY' invalido ou ausente."}
+3. CADASTRO COM CNH INVALIDA (esperado: 400)
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 63
+ETag: W/"3f-kXvTFJZmFRz8leeBbdgkUkvg8XE"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"erro":"A CNH deve conter exatamente 11 dígitos numéricos."}
+4. ROTA INEXISTENTE (esperado: 404)
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 60
+ETag: W/"3c-FaN9AmZqjke1FsAm8K/UB0+2Oc8"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"erro":"Endpoint nao encontrado no servidor Binario Tech."}
+5. CONSULTA DE MOTORISTAS (esperado: 200)
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 399
+ETag: W/"18f-s2BvbGPKysXLeX2uNTh4MrNf9c4"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+[{"id":1,"nome":"Carlos Silva","cnh":"12345678900","categoria":"E","ativo":true},{"id":2,"nome":"Ana Pereira","cnh":"98765432100","categoria":"D","ativo":true},{"id":3,"nome":"Teste","cnh":"12345678901","categoria":"B","ativo":true},{"id":4,"nome":"Motorista Teste","cnh":"12345678901","categoria":"B","ativo":true},{"id":5,"nome":"Motorista Teste","cnh":"12345678901","categoria":"B","ativo":true}]
+6. CADASTRO DE MOTORISTA (esperado: 201)
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 82
+ETag: W/"52-oiFI9U43QzV7UaeNs5hWgy78xrs"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":6,"nome":"Motorista Teste","cnh":"12345678901","categoria":"B","ativo":true}
+7. CONSULTA DE MANUTENCOES (esperado: 200)
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 351
+ETag: W/"15f-paXjijJ1nXOi/ycOIs89Ql4qfNc"
+Date: Thu, 22 Oct 2026 13:31:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+[{"id":1,"veiculo":"SCA-0001","descricao":"Troca de oleo","valor":350},{"id":2,"veiculo":"SCA-0001","descricao":"Troca de oleo","valor":350},{"id":3,"veiculo":"SCA-0001","descricao":"Troca de oleo","valor":350},{"id":4,"veiculo":"SCA-0001","descricao":"Troca de oleo","valor":350},{"id":5,"veiculo":"SCA-0001","descricao":"Troca de oleo","valor":350}]
+8. CADASTRO DE MANUTENCAO
+{
+  "id": 6,
+  "veiculo": "SCA-0001",
+  "descricao": "Troca de oleo",
+  "valor": 350
+}
